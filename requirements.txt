@@ -1,0 +1,6 @@
+pandas
+numpy
+plotly
+requests
+python-dotenv
+google-genai

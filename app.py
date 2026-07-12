@@ -12,7 +12,6 @@ from google import genai
 # ==========================================
 # 1. SYSTEM INITIALIZATION & MEMORY MANAGEMENT
 # ==========================================
-# Trim chat history to prevent Session State memory leaks
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if len(st.session_state.messages) > 10:
@@ -30,6 +29,7 @@ st.markdown("""
     .reportview-container { background: #0b0f19; color: white; }
     .stMetric { background: rgba(0, 255, 204, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(0, 255, 204, 0.2); }
     .news-card { padding: 15px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); margin-bottom: 10px; border-left: 4px solid #00ffcc; }
+    .guardrail { padding: 15px; border-radius: 8px; border-left: 5px solid #ff007f; background: rgba(255,0,127,0.1); margin-bottom: 20px;}
     </style>
     """, unsafe_allow_html=True)
 
@@ -38,7 +38,7 @@ if not TIINGO_API_KEY or not GEMINI_API_KEY:
     st.stop()
 
 # ==========================================
-# 2. OPTIMIZED DATA ENGINES (WITH TIMEOUTS & RAM LIMITS)
+# 2. OPTIMIZED DATA ENGINES
 # ==========================================
 def calculate_rsi(series, period=14):
     delta = series.diff()
@@ -47,21 +47,17 @@ def calculate_rsi(series, period=14):
     rs = gain / (loss + 1e-10)
     return 100 - (100 / (1 + rs))
 
-# max_entries limits the cache to 5 symbols to prevent 1GB RAM limits
 @st.cache_data(ttl=3600, max_entries=5)
 def fetch_and_calculate_data(symbol, days):
     headers = {'Content-Type': 'application/json', 'Authorization': f'Token {TIINGO_API_KEY}'}
     start_date = (datetime.today() - timedelta(days=days)).strftime('%Y-%m-%d')
     url = f"https://api.tiingo.com/tiingo/daily/{symbol}/prices?startDate={start_date}"
     try:
-        # Added 10-second timeout to prevent server thread hanging
         response = requests.get(url, headers=headers, timeout=10)
         if response.status_code == 200 and response.json():
             df = pd.DataFrame(response.json())
             df['date'] = pd.to_datetime(df['date']).dt.tz_localize(None)
             df.set_index('date', inplace=True)
-            
-            # Offload calculations here so they don't run on every UI click
             df['SMA20'] = df['close'].rolling(window=20).mean()
             df['RSI'] = calculate_rsi(df['close'])
             return df
@@ -82,7 +78,7 @@ def fetch_tiingo_news(symbol):
     return []
 
 # ==========================================
-# 3. SIDEBAR NAVIGATION
+# 3. SIDEBAR NAVIGATION & MATH LOGIC
 # ==========================================
 st.sidebar.image("https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/182px-Python-logo-notext.svg.png", width=50)
 st.sidebar.title("System Modules")
@@ -100,13 +96,22 @@ ticker = st.sidebar.text_input("Target Ticker", value="AAPL").upper()
 years_back = st.sidebar.slider("Time Horizon (Years)", min_value=1, max_value=5, value=1)
 days_back = years_back * 365
 
-# Load Data
-with st.spinner("Synchronizing feeds..."):
+with st.spinner("Synchronizing feeds and computing CAPM..."):
     df = fetch_and_calculate_data(ticker, days_back)
+    spy_df = fetch_and_calculate_data("SPY", days_back)
 
 if df.empty:
     st.error(f"Data stream offline or timed out for '{ticker}'. Please try again.")
     st.stop()
+
+# ACADEMIC MATH: Beta and CAPM Calculation
+if not spy_df.empty:
+    aligned = pd.concat([df['close'].pct_change(), spy_df['close'].pct_change()], axis=1).dropna()
+    aligned.columns = ['Stock', 'SPY']
+    beta = aligned.cov().iloc[0, 1] / aligned['SPY'].var() if aligned['SPY'].var() != 0 else 1.0
+    capm_expected_return = 0.045 + (beta * 0.06) # Risk Free: 4.5%, Market Premium: 6%
+else:
+    beta, capm_expected_return = 1.0, 0.105
 
 current_price = df['close'].iloc[-1]
 latest_rsi = df['RSI'].iloc[-1]
@@ -117,24 +122,40 @@ latest_sma = df['SMA20'].iloc[-1]
 # ==========================================
 
 # ------------------------------------------
-# SECTION 1: CHARTING
+# SECTION 1: CHARTING & ACADEMICS
 # ------------------------------------------
 if app_mode == "📈 1. Market Charting":
     st.title(f"📈 Charting Terminal: {ticker}")
     
-    col1, col2, col3 = st.columns(3)
+    # THE DOCTOR: COGNITIVE GUARDRAIL
+    if beta > 1.5 or latest_rsi > 75 or latest_rsi < 25:
+        st.markdown(f"""
+        <div class="guardrail">
+            <h4 style="margin:0; color:#ff007f;">🩺 Behavioral Guardrail Activated</h4>
+            <p style="margin:5px 0 0 0; font-size:0.9rem;">Extreme momentum (RSI) or high volatility (Beta) detected. Execute trades systematically, not emotionally. Guard your capital.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # METRICS
+    col1, col2, col3, col4 = st.columns(4)
     col1.metric("Current Close", f"${current_price:.2f}")
     col2.metric("14-Day RSI", f"{latest_rsi:.2f}")
-    col3.metric("20-Day SMA", f"${latest_sma:.2f}")
+    col3.metric("Calculated Beta", f"{beta:.2f}", f"vs SPY")
+    col4.metric("CAPM Target", f"{capm_expected_return*100:.2f}%", "Est. Return")
+
+    # THE PROFESSOR'S DESK
+    with st.expander("🎓 The Professor's Desk: Learn the Math behind these Metrics"):
+        st.write("**CAPM (Capital Asset Pricing Model):** Calculates expected return based on risk. Formula: `Expected Return = Risk Free Rate + Beta * (Market Return - Risk Free Rate)`")
+        st.write("**Beta:** Measures how volatile the stock is compared to the S&P 500. A Beta of 1.5 means the stock moves 50% more violently than the broader market.")
+        st.write("**RSI (Relative Strength Index):** A momentum oscillator from 0 to 100. Above 70 means the stock is overbought (too expensive too fast). Below 30 means oversold.")
 
     st.markdown("<br>", unsafe_allow_html=True)
     fig = go.Figure()
     fig.add_trace(go.Candlestick(x=df.index, open=df['open'], high=df['high'], low=df['low'], close=df['close'], name="Price"))
     fig.add_trace(go.Scatter(x=df.index, y=df['SMA20'], line=dict(color='#ff9900', width=1.5), name="20 SMA"))
-    fig.update_layout(template="plotly_dark", height=550, margin=dict(l=0, r=0, t=10, b=0), xaxis_rangeslider_visible=False)
+    fig.update_layout(template="plotly_dark", height=450, margin=dict(l=0, r=0, t=10, b=0), xaxis_rangeslider_visible=False)
     st.plotly_chart(fig, use_container_width=True)
     
-    # Force clear plot memory to avoid memory leaks
     del fig
     gc.collect()
 
@@ -175,7 +196,7 @@ elif app_mode == "📰 3. Live News Feed":
                 headlines = "\n".join([a.get('title', '') for a in news_data])
                 client = genai.Client(api_key=GEMINI_API_KEY)
                 response = client.models.generate_content(
-                    model='gemini-3.5-flash',
+                    model='gemini-3.5-flash', # UPDATED TO 3.5 FLASH
                     contents=f"You are a quant. Read these headlines for {ticker}:\n{headlines}\n\nProvide a 3-sentence sentiment summary (Bullish/Bearish/Neutral)."
                 )
                 st.success("Analysis Complete")
@@ -212,7 +233,7 @@ elif app_mode == "💬 4. Neural AI Chat":
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
             
-    if user_input := st.chat_input("E.g., Based on the current RSI, is this stock overbought?"):
+    if user_input := st.chat_input(f"E.g., Based on the Beta of {beta:.2f}, how volatile is this asset?"):
         st.session_state.messages.append({"role": "user", "content": user_input})
         with st.chat_message("user"):
             st.markdown(user_input)
@@ -222,8 +243,8 @@ elif app_mode == "💬 4. Neural AI Chat":
                 try:
                     client = genai.Client(api_key=GEMINI_API_KEY)
                     response = client.models.generate_content(
-                        model='gemini-3.5-flash',
-                        contents=f"You are an expert quantitative analyst. Stock: {ticker}. Current Price: {current_price:.2f}. RSI: {latest_rsi:.1f}. User Query: {user_input}"
+                        model='gemini-3.5-flash', # UPDATED TO 3.5 FLASH
+                        contents=f"You are an expert quantitative analyst. Stock: {ticker}. Current Price: {current_price:.2f}. RSI: {latest_rsi:.1f}. Beta: {beta:.2f}. CAPM Expected Return: {capm_expected_return*100:.2f}%. User Query: {user_input}"
                     )
                     st.markdown(response.text)
                     st.session_state.messages.append({"role": "assistant", "content": response.text})

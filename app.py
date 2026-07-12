@@ -23,7 +23,7 @@ st.markdown("""
     .reportview-container { background: #12121e; }
     .stMetric { background: rgba(26, 26, 46, 0.6); padding: 15px; border-radius: 10px; border: 1px solid rgba(0, 255, 204, 0.2); }
     </style>
-    """, unsafe_html=True)
+    """, unsafe_allow_html=True)
 
 st.title("📈 Next-Gen AI Quant Workstation")
 
@@ -128,7 +128,7 @@ else:
     col1.metric("Current Close", f"${current_price:.2f}")
     
     with col2:
-        st.markdown(f"<div style='text-align:center; padding:5px; border-radius:5px; background:rgba(255,255,255,0.05);'><b>Quant Signal</b><br><span style='color:{signal_color}; font-size:1.2rem; font-weight:bold;'>{tech_signal}</span></div>", unsafe_html=True)
+        st.markdown(f"<div style='text-align:center; padding:5px; border-radius:5px; background:rgba(255,255,255,0.05);'><b>Quant Signal</b><br><span style='color:{signal_color}; font-size:1.2rem; font-weight:bold;'>{tech_signal}</span></div>", unsafe_allow_html=True)
         
     col3.metric("Calculated Beta", f"{beta:.2f}", "vs S&P 500")
     col4.metric("Academic CAPM Target", f"{capm_expected_return*100:.2f}%", "Est. Annual Return")

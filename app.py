@@ -178,7 +178,7 @@ if user_input:
         try:
             client = genai.Client(api_key=GEMINI_API_KEY)
             response = client.models.generate_content(
-                model='gemini-2.5-flash',
+                model='gemini-3.5-flash',
                 contents=f"Analyze {ticker} with RSI={latest_rsi:.1f}. User query: {user_input}"
             )
             st.markdown(response.text)

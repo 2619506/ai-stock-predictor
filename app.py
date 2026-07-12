@@ -118,7 +118,7 @@ if user_input := st.chat_input("Ask about technicals or strategy..."):
     with st.chat_message("user"):
         st.markdown(user_input)
 
-    with st.chat_message("assistant"):
+   with st.chat_message("assistant"):
         try:
             client = genai.Client(api_key=GEMINI_API_KEY)
             response = client.models.generate_content(
@@ -127,5 +127,6 @@ if user_input := st.chat_input("Ask about technicals or strategy..."):
             )
             st.markdown(response.text)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
-        except:
-            st.error("AI Assistant unavailable.")
+        except Exception as e:
+            # THIS WILL NOW SHOW THE ACTUAL ERROR
+            st.error(f"Neural Error: {e}")

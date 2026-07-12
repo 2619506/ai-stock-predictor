@@ -148,7 +148,7 @@ with colB:
                 headlines = "\n".join([a.get('title', '') for a in news_data])
                 client = genai.Client(api_key=GEMINI_API_KEY)
                 response = client.models.generate_content(
-                    model='gemini-2.5-flash',
+                    model='gemini-3.5-flash',
                     contents=f"Analyze sentiment for {ticker} based on these headlines: {headlines}"
                 )
                 st.write(response.text)

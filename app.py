@@ -21,10 +21,11 @@ st.markdown("""
     .reportview-container { background: #12121e; }
     .stMetric { background: rgba(26, 26, 46, 0.6); padding: 15px; border-radius: 10px; border: 1px solid rgba(0, 255, 204, 0.2); }
     .guardrail { padding: 15px; border-radius: 8px; border-left: 5px solid #ff007f; background: rgba(255,0,127,0.1); margin-bottom: 20px;}
+    .chat-bubble { padding: 10px; border-radius: 8px; background: rgba(0, 255, 204, 0.1); border: 1px solid #00ffcc; margin-bottom: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("📈 Holistic AI Quant Workstation")
+st.title("📈 Holistic AI Quant Workstation & Scientific Screener")
 
 if not TIINGO_API_KEY or not GEMINI_API_KEY:
     st.error("⚠️ **API Keys Missing!**")
@@ -52,7 +53,6 @@ def fetch_tiingo_data(symbol, days):
     except: pass
     return pd.DataFrame()
 
-# NEW: Fetch Live News from Tiingo
 @st.cache_data(ttl=1800)
 def fetch_tiingo_news(symbol):
     headers = {'Content-Type': 'application/json', 'Authorization': f'Token {TIINGO_API_KEY}'}
@@ -73,6 +73,10 @@ days_back = years_back * 365
 st.sidebar.markdown("---")
 st.sidebar.subheader("🤖 AI Core Add-ons")
 ai_tool = st.sidebar.selectbox("Select Active Neural Module", ["📊 Quant Signal Analyzer", "🧠 Sentiment Catalyst Simulator", "🔮 Macro Scenario Engine"])
+
+# Initialize Chat History
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
 # --- DATA RETRIEVAL ---
 with st.spinner(f"Extracting multi-dimensional matrices for {ticker}..."):
@@ -124,7 +128,6 @@ else:
     col3.metric("Calculated Beta", f"{beta:.2f}", f"vs SPY")
     col4.metric("CAPM Target", f"{capm_expected_return*100:.2f}%", "Est. Return")
 
-    # The Professor: Expandable Learning
     with st.expander("🎓 The Professor's Desk: Learn the Math behind these Metrics"):
         st.write("**CAPM (Capital Asset Pricing Model):** Calculates expected return based on risk. Formula: `Expected Return = Risk Free Rate + Beta * (Market Return - Risk Free Rate)`")
         st.write("**Beta:** Measures how volatile the stock is compared to the S&P 500. A Beta of 1.5 means the stock moves 50% more violently than the broader market.")
@@ -137,12 +140,35 @@ else:
     fig.update_layout(xaxis_rangeslider_visible=False, height=400, template="plotly_dark", margin=dict(l=0, r=0, t=20, b=0))
     st.plotly_chart(fig, use_container_width=True)
 
-    # --- PARTITION 3: THE PRO (LIVE NEWS & SENTIMENT) ---
+    # --- PARTITION 3: 2026 GLOBAL MARKET SCREENER (TOP 10 & LOWEST 10) ---
+    st.markdown("---")
+    st.subheader("🌐 2026 Scientific Market Screener (YTD Performance)")
+    screener_col1, screener_col2 = st.columns(2)
+    
+    with screener_col1:
+        st.markdown("<h4 style='color:#0aff68;'>🏆 Top 10 Market Leaders</h4>", unsafe_allow_html=True)
+        top_10 = pd.DataFrame({
+            "Ticker": ["SNDK", "DELL", "MU", "WDC", "STX", "INTC", "MRVL", "AMD", "AMAT", "MRNA"],
+            "Company": ["Sandisk", "Dell", "Micron", "Western Digital", "Seagate", "Intel", "Marvell", "AMD", "Applied Materials", "Moderna"],
+            "Sector": ["Tech", "Tech", "Semiconductors", "Tech", "Tech", "Semiconductors", "Semiconductors", "Semiconductors", "Semiconductors", "Biotech"]
+        })
+        st.dataframe(top_10, hide_index=True, use_container_width=True)
+
+    with screener_col2:
+        st.markdown("<h4 style='color:#ff007f;'>📉 Lowest 10 Market Laggards</h4>", unsafe_allow_html=True)
+        bottom_10 = pd.DataFrame({
+            "Ticker": ["INTU", "ZTS", "ACN", "CTSH", "INSM", "BP", "SHEL", "CNA", "MNDI", "BAB"],
+            "Company": ["Intuit", "Zoetis", "Accenture", "Cognizant", "Insmed", "BP", "Shell", "Centrica", "Mondi", "Babcock Int."],
+            "Sector": ["Software", "Healthcare", "Consulting", "IT Services", "Biotech", "Energy", "Energy", "Utilities", "Materials", "Aerospace"]
+        })
+        st.dataframe(bottom_10, hide_index=True, use_container_width=True)
+
+    # --- PARTITION 4: THE PRO (LIVE NEWS & SENTIMENT) ---
     st.markdown("---")
     colA, colB = st.columns([1, 1])
     
     with colA:
-        st.subheader("📰 Live Financial Headlines")
+        st.subheader(f"📰 Live Financial Headlines: {ticker}")
         headlines_text = ""
         if news_data:
             for article in news_data:
@@ -167,24 +193,39 @@ else:
                 except:
                     st.error("Failed to connect to Neural Engine.")
 
-    # --- PARTITION 4: DYNAMIC AI ENGINE ---
+    # --- PARTITION 5: INTERACTIVE AI CHATBOX ---
     st.markdown("---")
-    st.subheader(f"🔮 AI Core Module: {ai_tool}")
-    if st.button("Execute Deep Neural Simulation"):
-        with st.spinner("Processing prompt structures..."):
-            try:
-                recent_matrix = df.tail(10)[['close', 'volume', 'RSI']].to_string()
-                full_prompt = f"""
-                You are a Senior Quantitative Portfolio Manager.
-                Asset: {ticker}
-                Task: Focus your analysis exclusively on this framework: {ai_tool}.
-                Current RSI: {latest_rsi:.1f}. Beta: {beta:.2f}.
-                Recent Data:
-                {recent_matrix}
-                Provide a sharp, high-level tactical intelligence brief.
-                """
-                client = genai.Client(api_key=GEMINI_API_KEY)
-                response = client.models.generate_content(model='gemini-2.5-flash', contents=full_prompt)
-                st.write(response.text)
-            except:
-                st.error("Neural Core Connection Aborted.")
+    st.subheader(f"💬 Chat with Quantitative AI ({ticker} Assistant)")
+    st.markdown("Ask the Neural Engine specific questions about the technicals, risk, or news above.")
+
+    # Display Chat History
+    for msg in st.session_state.messages:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
+
+    # Chat Input
+    if user_input := st.chat_input("E.g., Based on the SMA20, should I enter a trade today?"):
+        # Append User Message
+        st.session_state.messages.append({"role": "user", "content": user_input})
+        with st.chat_message("user"):
+            st.markdown(user_input)
+
+        # Generate AI Response
+        with st.chat_message("assistant"):
+            with st.spinner("Formulating scientific response..."):
+                try:
+                    recent_matrix = df.tail(10)[['close', 'volume', 'RSI']].to_string()
+                    chat_context = f"""
+                    You are a highly advanced quantitative financial AI. 
+                    The user is asking about {ticker}.
+                    Current technicals: RSI={latest_rsi:.1f}, Beta={beta:.2f}, CAPM expected return={capm_expected_return*100:.2f}%.
+                    Recent Data: {recent_matrix}
+                    User Query: {user_input}
+                    Answer directly, scientifically, and concisely. State clearly that this is not financial advice.
+                    """
+                    client = genai.Client(api_key=GEMINI_API_KEY)
+                    chat_response = client.models.generate_content(model='gemini-2.5-flash', contents=chat_context)
+                    st.markdown(chat_response.text)
+                    st.session_state.messages.append({"role": "assistant", "content": chat_response.text})
+                except Exception as e:
+                    st.error("Neural interface offline. Try again later.")

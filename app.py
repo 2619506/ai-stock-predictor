@@ -8,7 +8,10 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from google import genai
 
-# Load local environment variables
+# 1. CRITICAL: INITIALIZE SESSION STATE AT THE VERY TOP
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
 load_dotenv()
 
 TIINGO_API_KEY = os.environ.get("TIINGO_API_KEY")
@@ -16,21 +19,22 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 st.set_page_config(page_title="AI Quant Workstation", page_icon="📈", layout="wide")
 
+# CSS Styling
 st.markdown("""
     <style>
     .reportview-container { background: #12121e; }
     .stMetric { background: rgba(26, 26, 46, 0.6); padding: 15px; border-radius: 10px; border: 1px solid rgba(0, 255, 204, 0.2); }
     .guardrail { padding: 15px; border-radius: 8px; border-left: 5px solid #ff007f; background: rgba(255,0,127,0.1); margin-bottom: 20px;}
-    .chat-bubble { padding: 10px; border-radius: 8px; background: rgba(0, 255, 204, 0.1); border: 1px solid #00ffcc; margin-bottom: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("📈 Holistic AI Quant Workstation & Scientific Screener")
+st.title("📈 Holistic AI Quant Workstation")
 
 if not TIINGO_API_KEY or not GEMINI_API_KEY:
     st.error("⚠️ **API Keys Missing!**")
     st.stop()
 
+# Helpers
 def calculate_rsi(series, period=14):
     delta = series.diff()
     gain = (delta.where(delta > 0, 0)).ewm(alpha=1/period, adjust=False).mean()
@@ -53,179 +57,75 @@ def fetch_tiingo_data(symbol, days):
     except: pass
     return pd.DataFrame()
 
-@st.cache_data(ttl=1800)
-def fetch_tiingo_news(symbol):
-    headers = {'Content-Type': 'application/json', 'Authorization': f'Token {TIINGO_API_KEY}'}
-    url = f"https://api.tiingo.com/tiingo/news?tickers={symbol}&limit=5"
-    try:
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            return response.json()
-    except: pass
-    return []
-
 # --- SIDEBAR ---
 st.sidebar.header("🛸 Control Matrix")
 ticker = st.sidebar.text_input("Stock Ticker", value="AAPL").upper()
 years_back = st.sidebar.slider("Historical Window (Years)", min_value=1, max_value=5, value=1)
 days_back = years_back * 365
 
-st.sidebar.markdown("---")
-st.sidebar.subheader("🤖 AI Core Add-ons")
-ai_tool = st.sidebar.selectbox("Select Active Neural Module", ["📊 Quant Signal Analyzer", "🧠 Sentiment Catalyst Simulator", "🔮 Macro Scenario Engine"])
-
-# Initialize Chat History
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
 # --- DATA RETRIEVAL ---
-with st.spinner(f"Extracting multi-dimensional matrices for {ticker}..."):
+with st.spinner(f"Loading data for {ticker}..."):
     df = fetch_tiingo_data(ticker, days_back)
     spy_df = fetch_tiingo_data("SPY", days_back)
-    news_data = fetch_tiingo_news(ticker)
 
-if df is None or df.empty:
-    st.error(f"Execution Halted: Data stream for '{ticker}' returned empty.")
-else:
-    df['SMA20'] = df['close'].rolling(window=20).mean()
-    df['SMA50'] = df['close'].rolling(window=50).mean()
-    df['RSI'] = calculate_rsi(df['close'])
-    
-    current_price = df['close'].iloc[-1]
-    latest_rsi = df['RSI'].iloc[-1]
-    latest_sma20 = df['SMA20'].iloc[-1]
-    
-    if latest_rsi < 35 and current_price > latest_sma20: tech_signal, signal_color = "🟢 STRONG BUY", "#00ffcc"
-    elif latest_rsi < 45: tech_signal, signal_color = "🟢 ACCUMULATE", "#0aff68"
-    elif latest_rsi > 70: tech_signal, signal_color = "🔴 OVERBOUGHT / SELL", "#ff007f"
-    elif latest_rsi > 55 and current_price < latest_sma20: tech_signal, signal_color = "🟡 REDUCE", "#ff9900"
-    else: tech_signal, signal_color = "⚪ HOLD / NEUTRAL", "#ffffff"
+if df.empty:
+    st.error(f"Could not fetch data for '{ticker}'.")
+    st.stop()
 
-    df['Return'] = df['close'].pct_change()
-    if spy_df is not None and not spy_df.empty:
-        spy_df['Return'] = spy_df['close'].pct_change()
-        aligned = pd.concat([df['Return'], spy_df['Return']], axis=1).dropna()
-        aligned.columns = ['Stock', 'SPY']
-        beta = aligned.cov().iloc[0, 1] / aligned['SPY'].var()
-        capm_expected_return = 0.045 + (beta * 0.06)
-    else:
-        beta, capm_expected_return = 1.0, 0.0
+# --- CALCULATIONS ---
+df['SMA20'] = df['close'].rolling(window=20).mean()
+df['RSI'] = calculate_rsi(df['close'])
+latest_rsi = df['RSI'].iloc[-1]
+current_price = df['close'].iloc[-1]
 
-    # --- THE DOCTOR: COGNITIVE GUARDRAIL ---
-    if beta > 1.5 or latest_rsi > 75 or latest_rsi < 25:
-        st.markdown(f"""
-        <div class="guardrail">
-            <h4 style="margin:0; color:#ff007f;">🩺 Behavioral Guardrail Activated</h4>
-            <p style="margin:5px 0 0 0; font-size:0.9rem;">High volatility or extreme momentum detected. Ensure trades are executed based on systemic rules, not FOMO or panic. Guard your capital.</p>
-        </div>
-        """, unsafe_allow_html=True)
+# --- MAIN DASHBOARD (FLAT STRUCTURE) ---
+st.subheader("📊 Algorithmic Metrics")
+col1, col2, col3 = st.columns(3)
+col1.metric("Current Price", f"${current_price:.2f}")
+col2.metric("RSI", f"{latest_rsi:.2f}")
+col3.metric("Trend", "Bullish" if latest_rsi < 70 else "Overbought")
 
-    # --- PARTITION 1: TECHNICALS & THE PROFESSOR ---
-    st.subheader("📊 Algorithmic & Academic Valuation")
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Current Close", f"${current_price:.2f}")
-    with col2: st.markdown(f"<div style='text-align:center; padding:5px; border-radius:5px; background:rgba(255,255,255,0.05);'><b>Quant Signal</b><br><span style='color:{signal_color}; font-size:1.2rem; font-weight:bold;'>{tech_signal}</span></div>", unsafe_allow_html=True)
-    col3.metric("Calculated Beta", f"{beta:.2f}", f"vs SPY")
-    col4.metric("CAPM Target", f"{capm_expected_return*100:.2f}%", "Est. Return")
+# --- CHART ---
+fig = go.Figure()
+fig.add_trace(go.Candlestick(x=df.index, open=df['open'], high=df['high'], low=df['low'], close=df['close']))
+fig.update_layout(template="plotly_dark", height=400)
+st.plotly_chart(fig, use_container_width=True)
 
-    with st.expander("🎓 The Professor's Desk: Learn the Math behind these Metrics"):
-        st.write("**CAPM (Capital Asset Pricing Model):** Calculates expected return based on risk. Formula: `Expected Return = Risk Free Rate + Beta * (Market Return - Risk Free Rate)`")
-        st.write("**Beta:** Measures how volatile the stock is compared to the S&P 500. A Beta of 1.5 means the stock moves 50% more violently than the broader market.")
-        st.write("**RSI (Relative Strength Index):** A momentum oscillator from 0 to 100. Above 70 means the stock is overbought (too expensive too fast). Below 30 means oversold.")
+# --- MARKET SCREENER ---
+st.subheader("🌐 2026 Global Market Screener")
+s_col1, s_col2 = st.columns(2)
+with s_col1:
+    st.markdown("🏆 **Top 10 Leaders**")
+    top_10 = pd.DataFrame({"Ticker": ["SNDK", "DELL", "MU", "WDC", "STX", "INTC", "MRVL", "AMD", "AMAT", "MRNA"]})
+    st.table(top_10)
+with s_col2:
+    st.markdown("📉 **Bottom 10 Laggards**")
+    bot_10 = pd.DataFrame({"Ticker": ["INTU", "ZTS", "ACN", "CTSH", "INSM", "BP", "SHEL", "CNA", "MNDI", "BAB"]})
+    st.table(bot_10)
 
-    # --- PARTITION 2: CHARTING ---
-    fig = go.Figure()
-    fig.add_trace(go.Candlestick(x=df.index, open=df['open'], high=df['high'], low=df['low'], close=df['close'], name="Price", increasing_line_color='#00ffcc', decreasing_line_color='#ff007f'))
-    fig.add_trace(go.Scatter(x=df.index, y=df['SMA20'], line=dict(color='#ff9900', width=1.5), name="20 SMA"))
-    fig.update_layout(xaxis_rangeslider_visible=False, height=400, template="plotly_dark", margin=dict(l=0, r=0, t=20, b=0))
-    st.plotly_chart(fig, use_container_width=True)
+# --- STABLE CHAT SECTION ---
+st.markdown("---")
+st.subheader("💬 Neural AI Chat Assistant")
 
-    # --- PARTITION 3: 2026 GLOBAL MARKET SCREENER (TOP 10 & LOWEST 10) ---
-    st.markdown("---")
-    st.subheader("🌐 2026 Scientific Market Screener (YTD Performance)")
-    screener_col1, screener_col2 = st.columns(2)
-    
-    with screener_col1:
-        st.markdown("<h4 style='color:#0aff68;'>🏆 Top 10 Market Leaders</h4>", unsafe_allow_html=True)
-        top_10 = pd.DataFrame({
-            "Ticker": ["SNDK", "DELL", "MU", "WDC", "STX", "INTC", "MRVL", "AMD", "AMAT", "MRNA"],
-            "Company": ["Sandisk", "Dell", "Micron", "Western Digital", "Seagate", "Intel", "Marvell", "AMD", "Applied Materials", "Moderna"],
-            "Sector": ["Tech", "Tech", "Semiconductors", "Tech", "Tech", "Semiconductors", "Semiconductors", "Semiconductors", "Semiconductors", "Biotech"]
-        })
-        st.dataframe(top_10, hide_index=True, use_container_width=True)
+# Display history
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-    with screener_col2:
-        st.markdown("<h4 style='color:#ff007f;'>📉 Lowest 10 Market Laggards</h4>", unsafe_allow_html=True)
-        bottom_10 = pd.DataFrame({
-            "Ticker": ["INTU", "ZTS", "ACN", "CTSH", "INSM", "BP", "SHEL", "CNA", "MNDI", "BAB"],
-            "Company": ["Intuit", "Zoetis", "Accenture", "Cognizant", "Insmed", "BP", "Shell", "Centrica", "Mondi", "Babcock Int."],
-            "Sector": ["Software", "Healthcare", "Consulting", "IT Services", "Biotech", "Energy", "Energy", "Utilities", "Materials", "Aerospace"]
-        })
-        st.dataframe(bottom_10, hide_index=True, use_container_width=True)
+# Chat Input (MUST BE FLAT, NOT IN COLUMNS)
+if user_input := st.chat_input("Ask about technicals or strategy..."):
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    with st.chat_message("user"):
+        st.markdown(user_input)
 
-    # --- PARTITION 4: THE PRO (LIVE NEWS & SENTIMENT) ---
-    st.markdown("---")
-    colA, colB = st.columns([1, 1])
-    
-    with colA:
-        st.subheader(f"📰 Live Financial Headlines: {ticker}")
-        headlines_text = ""
-        if news_data:
-            for article in news_data:
-                title = article.get('title', 'Headline Unavailable')
-                source = article.get('source', 'News Source')
-                headlines_text += f"- {title}\n"
-                st.markdown(f"<p style='font-size:0.85rem; margin-bottom:5px;'>• {title} <i>({source})</i></p>", unsafe_allow_html=True)
-        else:
-            st.write("No recent news found for this ticker.")
-            headlines_text = "No recent news."
-
-    with colB:
-        st.subheader("🧠 Daily News Sentiment Engine")
-        if st.button("Grade Today's News Sentiment"):
-            with st.spinner("Analyzing semantics..."):
-                try:
-                    news_prompt = f"Act as a professional financial analyst. Read these recent headlines for {ticker}:\n{headlines_text}\n\nProvide a 3-sentence summary of the news sentiment. Grade the overall sentiment as BULLISH, BEARISH, or NEUTRAL."
-                    client = genai.Client(api_key=GEMINI_API_KEY)
-                    response = client.models.generate_content(model='gemini-2.5-flash', contents=news_prompt)
-                    st.success("Sentiment Scored.")
-                    st.write(response.text)
-                except:
-                    st.error("Failed to connect to Neural Engine.")
-
-    # --- PARTITION 5: INTERACTIVE AI CHATBOX ---
-    st.markdown("---")
-    st.subheader(f"💬 Chat with Quantitative AI ({ticker} Assistant)")
-    st.markdown("Ask the Neural Engine specific questions about the technicals, risk, or news above.")
-
-    # Display Chat History
-    for msg in st.session_state.messages:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
-
-    # Chat Input
-    if user_input := st.chat_input("E.g., Based on the SMA20, should I enter a trade today?"):
-        # Append User Message
-        st.session_state.messages.append({"role": "user", "content": user_input})
-        with st.chat_message("user"):
-            st.markdown(user_input)
-
-        # Generate AI Response
-        with st.chat_message("assistant"):
-            with st.spinner("Formulating scientific response..."):
-                try:
-                    recent_matrix = df.tail(10)[['close', 'volume', 'RSI']].to_string()
-                    chat_context = f"""
-                    You are a highly advanced quantitative financial AI. 
-                    The user is asking about {ticker}.
-                    Current technicals: RSI={latest_rsi:.1f}, Beta={beta:.2f}, CAPM expected return={capm_expected_return*100:.2f}%.
-                    Recent Data: {recent_matrix}
-                    User Query: {user_input}
-                    Answer directly, scientifically, and concisely. State clearly that this is not financial advice.
-                    """
-                    client = genai.Client(api_key=GEMINI_API_KEY)
-                    chat_response = client.models.generate_content(model='gemini-2.5-flash', contents=chat_context)
-                    st.markdown(chat_response.text)
-                    st.session_state.messages.append({"role": "assistant", "content": chat_response.text})
-                except Exception as e:
-                    st.error("Neural interface offline. Try again later.")
+    with st.chat_message("assistant"):
+        try:
+            client = genai.Client(api_key=GEMINI_API_KEY)
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=f"Analyze {ticker} with RSI={latest_rsi:.1f}. User query: {user_input}"
+            )
+            st.markdown(response.text)
+            st.session_state.messages.append({"role": "assistant", "content": response.text})
+        except:
+            st.error("AI Assistant unavailable.")

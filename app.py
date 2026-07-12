@@ -1,113 +1,130 @@
-import os
-from pathlib import Path
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.express as px
 import requests
+import plotly.graph_objects as go
+import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from google import genai
 
-# --- BULLETPROOF .ENV LOADING ---
-# 1. Get the exact folder where this app.py file lives
-current_dir = Path(__file__).parent
-# 2. Tell Python exactly where the .env file is inside that folder
-env_path = current_dir / ".env"
-# 3. Force load that specific file
-load_dotenv(dotenv_path=env_path)
+# Load local environment variables (if running locally)
+load_dotenv()
 
-st.title("📈 AI Stock Analyzer & Predictor")
-st.write("Calculate Beta, visualize returns, and get an AI-powered short-term trend prediction.")
+# Securely grab API keys from Streamlit/Environment
+TIINGO_API_KEY = os.environ.get("TIINGO_API_KEY")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
-# --- Background API Key Loading ---
-tiingo_key = os.environ.get("TIINGO_API_KEY")
-gemini_key = os.environ.get("GEMINI_API_KEY")
+st.set_page_config(page_title="AI Stock Predictor", page_icon="📈", layout="wide")
 
-# --- UI Inputs ---
-col1, col2 = st.columns(2)
-with col1:
-    ticker = st.text_input("Enter Stock Ticker (e.g., AAPL, NVDA)", "AAPL").upper()
-with col2:
-    period = st.selectbox("Historical Data Range", ["1 Year", "2 Years", "5 Years"])
+st.title("📈 AI Stock Predictor")
 
-period_map = {"1 Year": 365, "2 Years": 730, "5 Years": 1825}
-end_date = datetime.now()
-start_date = end_date - timedelta(days=period_map[period])
+# 1. Validation Check: Ensure keys exist before trying to run
+if not TIINGO_API_KEY or not GEMINI_API_KEY:
+    st.error("⚠️ **API Keys Missing!**")
+    st.write("Please ensure `TIINGO_API_KEY` and `GEMINI_API_KEY` are securely added to your Streamlit Cloud Secrets.")
+    st.stop()
 
-str_start = start_date.strftime('%Y-%m-%d')
-str_end = end_date.strftime('%Y-%m-%d')
+# 2. Sidebar Configuration
+st.sidebar.header("Market Parameters")
+ticker = st.sidebar.text_input("Stock Ticker", value="AAPL").upper()
+days_back = st.sidebar.slider("Historical Data (Days)", min_value=30, max_value=365, value=180)
 
-# Helper function to fetch from Tiingo manually
-def fetch_tiingo_data(symbol, start, end, api_key):
-    url = f"https://api.tiingo.com/tiingo/daily/{symbol}/prices?startDate={start}&endDate={end}&token={api_key}"
-    headers = {'Content-Type': 'application/json'}
-    response = requests.get(url, headers=headers)
+# 3. Tiingo API Data Fetcher
+@st.cache_data(ttl=3600) # Caches data for 1 hour to prevent API limits
+def fetch_tiingo_data(symbol, days):
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Token {TIINGO_API_KEY}'
+    }
+    start_date = (datetime.today() - timedelta(days=days)).strftime('%Y-%m-%d')
+    url = f"https://api.tiingo.com/tiingo/daily/{symbol}/prices?startDate={start_date}"
     
-    if response.status_code != 200:
-        raise Exception(f"Tiingo API Error: {response.text}")
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        if not data:
+            return pd.DataFrame()
+        df = pd.DataFrame(data)
+        df['date'] = pd.to_datetime(df['date']).dt.tz_localize(None)
+        df.set_index('date', inplace=True)
+        return df
+    return None
+
+# 4. Process Data & Calculate Beta
+with st.spinner(f"Querying Tiingo for {ticker} matrices..."):
+    df = fetch_tiingo_data(ticker, days_back)
+    spy_df = fetch_tiingo_data("SPY", days_back) # S&P 500 for baseline
+
+if df is None or df.empty:
+    st.error(f"Could not fetch data for '{ticker}'. Please verify the ticker symbol.")
+else:
+    # Math: Calculate Beta vs Market
+    df['Return'] = df['close'].pct_change()
+    if spy_df is not None and not spy_df.empty:
+        spy_df['Return'] = spy_df['close'].pct_change()
+        aligned = pd.concat([df['Return'], spy_df['Return']], axis=1).dropna()
+        aligned.columns = ['Stock', 'SPY']
         
-    data = response.json()
-    df = pd.DataFrame(data)
-    df['date'] = pd.to_datetime(df['date'])
-    df.set_index('date', inplace=True)
-    return df
+        # Beta = Covariance(Stock, Market) / Variance(Market)
+        covar = aligned.cov().iloc[0, 1]
+        var_spy = aligned['SPY'].var()
+        beta = covar / var_spy if var_spy != 0 else np.nan
+    else:
+        beta = np.nan
 
-if st.button("Analyze & Predict"):
-    # Failsafe check
-    if not tiingo_key or not gemini_key:
-        st.error("⚠️ Missing API Keys! Please ensure your .env file contains TIINGO_API_KEY and GEMINI_API_KEY.")
-        st.stop()
+    # 5. Dashboard Metrics
+    current_price = df['close'].iloc[-1]
+    prev_price = df['close'].iloc[-2]
+    price_change = current_price - prev_price
+    pct_change = (price_change / prev_price) * 100
 
-    with st.spinner(f"Pulling data directly from Tiingo and running AI models..."):
-        try:
-            # 1. Fetch Data
-            stock_data = fetch_tiingo_data(ticker, str_start, str_end, tiingo_key)
-            market_data = fetch_tiingo_data("SPY", str_start, str_end, tiingo_key)
-            
-            # 2. Beta Calculation
-            stock_returns = stock_data["adjClose"].pct_change().dropna()
-            market_returns = market_data["adjClose"].pct_change().dropna()
-            
-            covariance = np.cov(stock_returns, market_returns)[0][1]
-            variance = np.var(market_returns)
-            beta = covariance / variance
-            
-            # Display Latest Price & Beta
-            latest_price = stock_data["adjClose"].iloc[-1]
-            metric_col1, metric_col2 = st.columns(2)
-            metric_col1.metric(label="Latest Closing Price", value=f"${latest_price:.2f}")
-            metric_col2.metric(label=f"Beta ({period})", value=f"{beta:.2f}")
-            
-            # 3. Visualization
-            df = pd.DataFrame({"Market Returns": market_returns, "Stock Returns": stock_returns})
-            fig = px.scatter(
-                df, x="Market Returns", y="Stock Returns", 
-                trendline="ols", 
-                title=f"{ticker} vs S&P 500 Daily Returns",
-                opacity=0.5
-            )
-            st.plotly_chart(fig, use_container_width=True)
-            
-            # 4. Extract recent data for prediction
-            recent_prices = stock_data['adjClose'].tail(14).round(2).tolist()
-            
-            # 5. Gemini AI Analysis & Prediction
-            st.subheader("🤖 AI Trend Prediction")
-            prompt = (
-                f"You are a quantitative stock analyst. The stock {ticker} has a beta of {beta:.2f}. "
-                f"Its closing prices over the last 14 trading days are: {recent_prices}. "
-                f"Based on this momentum and volatility, provide a brief 2-sentence prediction of the short-term trend. "
-                f"End with a short disclaimer that this is AI-generated and not financial advice."
-            )
-            
-            # Using the modern GenAI SDK
-            client = genai.Client(api_key=gemini_key)
-            response = client.models.generate_content(
-                model='gemini-3.5-flash',
-                contents=prompt
-            )
-            st.info(response.text)
-            
-        except Exception as e:
-            st.error(f"Error fetching data. Details: {e}")
+    st.markdown("---")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Current Close", f"${current_price:.2f}", f"{price_change:.2f} ({pct_change:.2f}%)")
+    col2.metric("Calculated Beta", f"{beta:.2f}" if not np.isnan(beta) else "N/A", "vs S&P 500 (SPY)")
+    col3.metric("Recent Trading Volume", f"{df['volume'].iloc[-1]:,.0f}")
+
+    # 6. Plotly Interactive Chart
+    st.subheader(f"Historical Candlestick Chart: {ticker}")
+    fig = go.Figure(data=[go.Candlestick(x=df.index,
+                    open=df['open'], high=df['high'],
+                    low=df['low'], close=df['close'],
+                    increasing_line_color='#00ffcc', decreasing_line_color='#ff007f')])
+    
+    fig.update_layout(xaxis_rangeslider_visible=False, height=500, template="plotly_dark", margin=dict(l=0, r=0, t=30, b=0))
+    st.plotly_chart(fig, use_container_width=True)
+
+    # 7. Gemini Neural Prediction
+    st.markdown("---")
+    st.subheader("🧠 AI Analytics Engine")
+    
+    if st.button("Generate Neural Prediction"):
+        with st.spinner("Initializing Google Gemini..."):
+            try:
+                # Format context for the LLM
+                recent_data = df.tail(10)[['close', 'volume']].to_string()
+                prompt = f"""
+                You are a highly skilled quantitative financial analyst. 
+                Analyze the following recent closing prices and volume data for {ticker}.
+                The stock has a calculated Beta of {beta:.2f} against the S&P 500.
+                
+                Recent 10-Day Data Matrix:
+                {recent_data}
+                
+                Provide a professional, concise assessment of the current momentum, potential volatility indicators based on the beta and volume, and a short-term qualitative prediction.
+                Conclude with a strict disclaimer that this output is generated by an AI and does not constitute financial advice.
+                """
+                
+                # Execute Gemini Call
+                client = genai.Client(api_key=GEMINI_API_KEY)
+                response = client.models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=prompt
+                )
+                
+                st.success("Analysis Complete")
+                st.write(response.text)
+                
+            except Exception as e:
+                st.error(f"Neural Engine Error: {e}")

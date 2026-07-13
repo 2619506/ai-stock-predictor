@@ -1,252 +1,135 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 import numpy as np
-import requests
-import plotly.graph_objects as go
-import os
-import gc
-from datetime import datetime, timedelta
-from dotenv import load_dotenv
-from google import genai
 
 # ==========================================
-# 1. SYSTEM INITIALIZATION & MEMORY MANAGEMENT
+# 1. SYSTEM INITIALIZATION & STATE
 # ==========================================
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-if len(st.session_state.messages) > 10:
-    st.session_state.messages = st.session_state.messages[-10:]
-
-load_dotenv()
-
-TIINGO_API_KEY = os.environ.get("TIINGO_API_KEY")
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-
-st.set_page_config(page_title="AI Quant Workstation", page_icon="📈", layout="wide")
+st.set_page_config(page_title="Unified Business Tracker", page_icon="🏢", layout="wide")
 
 st.markdown("""
     <style>
-    .reportview-container { background: #0b0f19; color: white; }
-    .stMetric { background: rgba(0, 255, 204, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(0, 255, 204, 0.2); }
-    .news-card { padding: 15px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); margin-bottom: 10px; border-left: 4px solid #00ffcc; }
-    .guardrail { padding: 15px; border-radius: 8px; border-left: 5px solid #ff007f; background: rgba(255,0,127,0.1); margin-bottom: 20px;}
+    .report-box { padding: 20px; border-radius: 10px; background: rgba(0, 150, 255, 0.1); border-left: 5px solid #0096ff; margin-bottom: 20px;}
+    .stMetric { background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
     </style>
     """, unsafe_allow_html=True)
 
-if not TIINGO_API_KEY or not GEMINI_API_KEY:
-    st.error("⚠️ **API Keys Missing!** Check your Streamlit Secrets.")
-    st.stop()
+st.title("🏢 Unified Business OS")
+st.write("Excel-level Data. Power BI-level Dashboards. PowerPoint-level Reporting.")
+
+# Initialize a default business dataset if none exists in memory
+if "business_data" not in st.session_state:
+    st.session_state.business_data = pd.DataFrame({
+        "Date": pd.date_range(start="2026-01-01", periods=5),
+        "Department": ["Sales", "Marketing", "Sales", "Operations", "Marketing"],
+        "Revenue": [15000, 8000, 22000, 0, 12000],
+        "Expenses": [4000, 3000, 5000, 6000, 4500],
+        "Status": ["Completed", "Active", "Completed", "Pending", "Active"]
+    })
 
 # ==========================================
-# 2. OPTIMIZED DATA ENGINES
+# 2. THE 3-PILLAR TAB ARCHITECTURE
 # ==========================================
-def calculate_rsi(series, period=14):
-    delta = series.diff()
-    gain = (delta.where(delta > 0, 0)).ewm(alpha=1/period, adjust=False).mean()
-    loss = (-delta.where(delta < 0, 0)).ewm(alpha=1/period, adjust=False).mean()
-    rs = gain / (loss + 1e-10)
-    return 100 - (100 / (1 + rs))
-
-@st.cache_data(ttl=3600, max_entries=5)
-def fetch_and_calculate_data(symbol, days):
-    headers = {'Content-Type': 'application/json', 'Authorization': f'Token {TIINGO_API_KEY}'}
-    start_date = (datetime.today() - timedelta(days=days)).strftime('%Y-%m-%d')
-    url = f"https://api.tiingo.com/tiingo/daily/{symbol}/prices?startDate={start_date}"
-    try:
-        response = requests.get(url, headers=headers, timeout=10)
-        if response.status_code == 200 and response.json():
-            df = pd.DataFrame(response.json())
-            df['date'] = pd.to_datetime(df['date']).dt.tz_localize(None)
-            df.set_index('date', inplace=True)
-            df['SMA20'] = df['close'].rolling(window=20).mean()
-            df['RSI'] = calculate_rsi(df['close'])
-            return df
-    except requests.exceptions.RequestException:
-        pass
-    return pd.DataFrame()
-
-@st.cache_data(ttl=1800, max_entries=5)
-def fetch_tiingo_news(symbol):
-    headers = {'Content-Type': 'application/json', 'Authorization': f'Token {TIINGO_API_KEY}'}
-    url = f"https://api.tiingo.com/tiingo/news?tickers={symbol}&limit=10"
-    try:
-        response = requests.get(url, headers=headers, timeout=10)
-        if response.status_code == 200:
-            return response.json()
-    except requests.exceptions.RequestException:
-        pass
-    return []
-
-# ==========================================
-# 3. SIDEBAR NAVIGATION & MATH LOGIC
-# ==========================================
-st.sidebar.image("https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/182px-Python-logo-notext.svg.png", width=50)
-st.sidebar.title("System Modules")
-
-app_mode = st.sidebar.radio("Select View:", [
-    "📈 1. Market Charting", 
-    "🌐 2. Global Screener", 
-    "📰 3. Live News Feed", 
-    "💬 4. Neural AI Chat"
-])
-
-st.sidebar.markdown("---")
-st.sidebar.subheader("Target Parameters")
-ticker = st.sidebar.text_input("Target Ticker", value="AAPL").upper()
-years_back = st.sidebar.slider("Time Horizon (Years)", min_value=1, max_value=5, value=1)
-days_back = years_back * 365
-
-with st.spinner("Synchronizing feeds and computing CAPM..."):
-    df = fetch_and_calculate_data(ticker, days_back)
-    spy_df = fetch_and_calculate_data("SPY", days_back)
-
-if df.empty:
-    st.error(f"Data stream offline or timed out for '{ticker}'. Please try again.")
-    st.stop()
-
-# ACADEMIC MATH: Beta and CAPM Calculation
-if not spy_df.empty:
-    aligned = pd.concat([df['close'].pct_change(), spy_df['close'].pct_change()], axis=1).dropna()
-    aligned.columns = ['Stock', 'SPY']
-    beta = aligned.cov().iloc[0, 1] / aligned['SPY'].var() if aligned['SPY'].var() != 0 else 1.0
-    capm_expected_return = 0.045 + (beta * 0.06) # Risk Free: 4.5%, Market Premium: 6%
-else:
-    beta, capm_expected_return = 1.0, 0.105
-
-current_price = df['close'].iloc[-1]
-latest_rsi = df['RSI'].iloc[-1]
-latest_sma = df['SMA20'].iloc[-1]
-
-# ==========================================
-# 4. MODULE RENDERING
-# ==========================================
+tab1, tab2, tab3 = st.tabs(["📊 1. Data Engine (Excel)", "📈 2. Interactive Canvas (Power BI)", "📑 3. Exec Report (PowerPoint)"])
 
 # ------------------------------------------
-# SECTION 1: CHARTING & ACADEMICS
+# TAB 1: THE DATA ENGINE (EXCEL REPLACEMENT)
 # ------------------------------------------
-if app_mode == "📈 1. Market Charting":
-    st.title(f"📈 Charting Terminal: {ticker}")
+with tab1:
+    st.header("Data Engine")
+    st.write("Add, edit, or delete rows. The math updates instantly.")
     
-    # THE DOCTOR: COGNITIVE GUARDRAIL
-    if beta > 1.5 or latest_rsi > 75 or latest_rsi < 25:
-        st.markdown(f"""
-        <div class="guardrail">
-            <h4 style="margin:0; color:#ff007f;">🩺 Behavioral Guardrail Activated</h4>
-            <p style="margin:5px 0 0 0; font-size:0.9rem;">Extreme momentum (RSI) or high volatility (Beta) detected. Execute trades systematically, not emotionally. Guard your capital.</p>
-        </div>
-        """, unsafe_allow_html=True)
+    # The Interactive Grid
+    edited_df = st.data_editor(
+        st.session_state.business_data,
+        num_rows="dynamic", # Allows adding/deleting rows like Excel
+        use_container_width=True,
+        column_config={
+            "Date": st.column_config.DateColumn("Date", required=True),
+            "Revenue": st.column_config.NumberColumn("Revenue ($)", format="$%d"),
+            "Expenses": st.column_config.NumberColumn("Expenses ($)", format="$%d"),
+            "Status": st.column_config.SelectboxColumn("Status", options=["Active", "Pending", "Completed", "Cancelled"])
+        }
+    )
     
-    # METRICS
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Current Close", f"${current_price:.2f}")
-    col2.metric("14-Day RSI", f"{latest_rsi:.2f}")
-    col3.metric("Calculated Beta", f"{beta:.2f}", f"vs SPY")
-    col4.metric("CAPM Target", f"{capm_expected_return*100:.2f}%", "Est. Return")
-
-    # THE PROFESSOR'S DESK
-    with st.expander("🎓 The Professor's Desk: Learn the Math behind these Metrics"):
-        st.write("**CAPM (Capital Asset Pricing Model):** Calculates expected return based on risk. Formula: `Expected Return = Risk Free Rate + Beta * (Market Return - Risk Free Rate)`")
-        st.write("**Beta:** Measures how volatile the stock is compared to the S&P 500. A Beta of 1.5 means the stock moves 50% more violently than the broader market.")
-        st.write("**RSI (Relative Strength Index):** A momentum oscillator from 0 to 100. Above 70 means the stock is overbought (too expensive too fast). Below 30 means oversold.")
-
-    st.markdown("<br>", unsafe_allow_html=True)
-    fig = go.Figure()
-    fig.add_trace(go.Candlestick(x=df.index, open=df['open'], high=df['high'], low=df['low'], close=df['close'], name="Price"))
-    fig.add_trace(go.Scatter(x=df.index, y=df['SMA20'], line=dict(color='#ff9900', width=1.5), name="20 SMA"))
-    fig.update_layout(template="plotly_dark", height=450, margin=dict(l=0, r=0, t=10, b=0), xaxis_rangeslider_visible=False)
-    st.plotly_chart(fig, use_container_width=True)
+    # Save edits to session state instantly
+    st.session_state.business_data = edited_df
     
-    del fig
-    gc.collect()
-
-# ------------------------------------------
-# SECTION 2: GLOBAL SCREENER
-# ------------------------------------------
-elif app_mode == "🌐 2. Global Screener":
-    st.title("🌐 Market Screener (Top & Bottom)")
-    st.write("Cross-market analysis of currently highly-searched tech assets.")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("<h3 style='color:#0aff68;'>🏆 Top 10 Leaders</h3>", unsafe_allow_html=True)
-        top_10 = pd.DataFrame({
-            "Ticker": ["NVDA", "DELL", "MU", "WDC", "STX", "INTC", "MRVL", "AMD", "AMAT", "MRNA"],
-            "Sector": ["AI Chips", "Hardware", "Memory", "Storage", "Storage", "Semiconductors", "Semiconductors", "Processors", "Equipment", "Biotech"]
-        })
-        st.dataframe(top_10, hide_index=True, use_container_width=True)
-
-    with col2:
-        st.markdown("<h3 style='color:#ff007f;'>📉 Bottom 10 Laggards</h3>", unsafe_allow_html=True)
-        bot_10 = pd.DataFrame({
-            "Ticker": ["INTU", "ZTS", "ACN", "CTSH", "INSM", "BP", "SHEL", "CNA", "MNDI", "BAB"],
-            "Sector": ["Software", "Healthcare", "Consulting", "IT Services", "Biotech", "Energy", "Energy", "Utilities", "Materials", "Aerospace"]
-        })
-        st.dataframe(bot_10, hide_index=True, use_container_width=True)
-
-# ------------------------------------------
-# SECTION 3: LIVE NEWS
-# ------------------------------------------
-elif app_mode == "📰 3. Live News Feed":
-    st.title(f"📰 Live News Feed: {ticker}")
-    news_data = fetch_tiingo_news(ticker)
-    
-    if st.button("🧠 Generate AI Sentiment Report"):
-        with st.spinner("Compiling semantic analysis..."):
-            try:
-                headlines = "\n".join([a.get('title', '') for a in news_data])
-                client = genai.Client(api_key=GEMINI_API_KEY)
-                response = client.models.generate_content(
-                    model='gemini-3.5-flash', # UPDATED TO 3.5 FLASH
-                    contents=f"You are a quant. Read these headlines for {ticker}:\n{headlines}\n\nProvide a 3-sentence sentiment summary (Bullish/Bearish/Neutral)."
-                )
-                st.success("Analysis Complete")
-                st.info(response.text)
-            except Exception as e:
-                st.error(f"Neural Error: {e}")
-                
+    # The Math / Stats Engine
     st.markdown("---")
-    if news_data:
-        for article in news_data:
-            title = article.get('title', 'No Title')
-            source = article.get('source', 'Unknown Source')
-            url = article.get('url', '#')
-            date_str = str(article.get('publishedDate', ''))[:10]
-            
-            st.markdown(f"""
-            <div class="news-card">
-                <a href="{url}" target="_blank" style="color: #00ffcc; text-decoration: none; font-size: 1.1rem; font-weight: bold;">{title}</a>
-                <br>
-                <span style="font-size: 0.8rem; color: #aaaaaa;">{source} | {date_str}</span>
-            </div>
-            """, unsafe_allow_html=True)
-    else:
-        st.write("No current news available for this ticker.")
+    st.subheader("Instant Statistics")
+    
+    # Calculate Profit automatically
+    edited_df["Profit"] = edited_df["Revenue"] - edited_df["Expenses"]
+    
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Total Revenue", f"${edited_df['Revenue'].sum():,.2f}")
+    col2.metric("Total Expenses", f"${edited_df['Expenses'].sum():,.2f}")
+    col3.metric("Net Profit", f"${edited_df['Profit'].sum():,.2f}")
+    
+    # Advanced Math: Profit Margin
+    margin = (edited_df['Profit'].sum() / edited_df['Revenue'].sum() * 100) if edited_df['Revenue'].sum() > 0 else 0
+    col4.metric("Profit Margin", f"{margin:.1f}%")
 
 # ------------------------------------------
-# SECTION 4: AI CHAT
+# TAB 2: INTERACTIVE CANVAS (POWER BI REPLACEMENT)
 # ------------------------------------------
-elif app_mode == "💬 4. Neural AI Chat":
-    st.title(f"💬 Neural AI Assistant ({ticker})")
-    st.write("Ask the quantitative model about trading strategies, indicators, or recent price action.")
+with tab2:
+    st.header("Interactive Dashboard")
+    st.write("Visualizations generated live from the Data Engine.")
     
-    for msg in st.session_state.messages:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
+    if not edited_df.empty:
+        dash_col1, dash_col2 = st.columns(2)
+        
+        with dash_col1:
+            # Chart 1: Revenue vs Expenses by Department
+            dept_group = edited_df.groupby("Department")[["Revenue", "Expenses"]].sum().reset_index()
+            fig1 = px.bar(dept_group, x="Department", y=["Revenue", "Expenses"], 
+                          title="Financials by Department", barmode="group",
+                          color_discrete_map={"Revenue": "#00ffcc", "Expenses": "#ff007f"})
+            fig1.update_layout(template="plotly_dark")
+            st.plotly_chart(fig1, use_container_width=True)
             
-    if user_input := st.chat_input(f"E.g., Based on the Beta of {beta:.2f}, how volatile is this asset?"):
-        st.session_state.messages.append({"role": "user", "content": user_input})
-        with st.chat_message("user"):
-            st.markdown(user_input)
+        with dash_col2:
+            # Chart 2: Project Status Distribution
+            fig2 = px.pie(edited_df, names="Status", title="Project Status Distribution", hole=0.4)
+            fig2.update_layout(template="plotly_dark")
+            st.plotly_chart(fig2, use_container_width=True)
             
-        with st.chat_message("assistant"):
-            with st.spinner("Processing..."):
-                try:
-                    client = genai.Client(api_key=GEMINI_API_KEY)
-                    response = client.models.generate_content(
-                        model='gemini-3.5-flash', # UPDATED TO 3.5 FLASH
-                        contents=f"You are an expert quantitative analyst. Stock: {ticker}. Current Price: {current_price:.2f}. RSI: {latest_rsi:.1f}. Beta: {beta:.2f}. CAPM Expected Return: {capm_expected_return*100:.2f}%. User Query: {user_input}"
-                    )
-                    st.markdown(response.text)
-                    st.session_state.messages.append({"role": "assistant", "content": response.text})
-                except Exception as e:
-                    st.error(f"API Error: {e}")
+        # Time Series Chart
+        st.markdown("---")
+        time_df = edited_df.groupby("Date")[["Revenue", "Profit"]].sum().reset_index()
+        fig3 = px.line(time_df, x="Date", y=["Revenue", "Profit"], title="Financial Trajectory Over Time", markers=True)
+        fig3.update_layout(template="plotly_dark")
+        st.plotly_chart(fig3, use_container_width=True)
+    else:
+        st.info("Add data in the Data Engine tab to generate visualizations.")
+
+# ------------------------------------------
+# TAB 3: EXEC REPORT (POWERPOINT REPLACEMENT)
+# ------------------------------------------
+with tab3:
+    st.header("Executive Summary")
+    st.write("Dynamic presentation ready for print or PDF export. Press `Ctrl + P` (or `Cmd + P`) to save as PDF.")
+    
+    total_rev = edited_df['Revenue'].sum()
+    total_prof = edited_df['Profit'].sum()
+    best_dept = dept_group.sort_values(by="Profit", ascending=False).iloc[0]["Department"] if not dept_group.empty and "Profit" in dept_group.columns else "N/A"
+    
+    # Auto-Generated Narrative (Dynamic Text)
+    st.markdown(f"""
+    <div class="report-box">
+        <h3>Month-End Business Review</h3>
+        <p>The business generated <b>${total_rev:,.2f}</b> in total revenue, resulting in a net profit of <b>${total_prof:,.2f}</b>. 
+        Our current profit margin stands at <b>{margin:.1f}%</b>.</p>
+        <p>The highest performing sector this period was the <b>{best_dept}</b> department.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Static snapshot of the charts for the report
+    rep_col1, rep_col2 = st.columns(2)
+    with rep_col1:
+        st.plotly_chart(fig1, use_container_width=True, key="rep_fig1")
+    with rep_col2:
+        st.plotly_chart(fig3, use_container_width=True, key="rep_fig3")

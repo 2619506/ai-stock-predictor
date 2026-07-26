@@ -103,14 +103,14 @@ def fetch_company_data(ticker, years):
         stock = yf.Ticker(ticker)
         df_full = stock.history(period="5y") 
         
-        # FIX FOR NaN BUG: Drop any rows where closing price is missing
+        # Drop any rows where closing price is missing
         df_full = df_full.dropna(subset=['Close'])
         
         if df_full.empty: return None, None, None, None
             
         df_full.reset_index(inplace=True)
         info = stock.info
-        news = stock.news[:3] # Get top 3 news items
+        news = stock.news[:5] # Fetch top 5, we will filter for the best 3
         
         cutoff_date = pd.Timestamp.now(tz=df_full['Date'].dt.tz) - pd.DateOffset(years=years)
         df_view = df_full[df_full['Date'] >= cutoff_date].copy()
@@ -152,12 +152,10 @@ with tab1:
             If the company innovates, increases revenue, and expands, the underlying value of the business grows, making your fraction more valuable. 
         </p>
     </div>
-    
     <div class="glass-card">
         <h3 style='margin-top:0; color: #38bdf8;'>Corporate Profile: {company_name}</h3>
         <p style='color: #94a3b8; font-size: 0.95rem;'><b>Sector:</b> {sector} &nbsp;|&nbsp; <b>Market Valuation:</b> {mcap}</p>
         <p style='font-size: 1.05rem; line-height: 1.7; color: #cbd5e1;'>{summary}</p>
-        
         <h4 style='color: #f1f5f9; margin-top: 20px;'>Future Outlook & Analyst Consensus</h4>
         <p style='font-size: 1.05rem; color: #cbd5e1;'>
             While the current price is <b>${current_price:.2f}</b>, Wall Street analysts have a consensus future price target of <b>${target_price if target_price != 'N/A' else 'Unavailable'}</b> for the coming year. 
@@ -166,26 +164,43 @@ with tab1:
     </div>
     """, unsafe_allow_html=True)
     
-    # News Section
+    # Robust News Section Parsing
     st.markdown("<h3 style='color: #f1f5f9; margin-top: 30px;'>📰 Real-Time Market News</h3>", unsafe_allow_html=True)
+    valid_news_count = 0
     if news:
         for item in news:
-            title = item.get('title', 'Market Update')
-            publisher = item.get('publisher', 'Financial Press')
-            link = item.get('link', '#')
-            # Handle Yahoo Finance API timestamp formatting
-            try:
-                date = datetime.fromtimestamp(item.get('providerPublishTime', 0)).strftime('%B %d, %Y')
-            except:
-                date = "Recent"
+            # Handle Yahoo Finance's varying dictionary structures safely
+            title = item.get('content', {}).get('title') or item.get('title')
+            publisher = item.get('content', {}).get('provider', {}).get('displayName') or item.get('publisher', 'Financial Press')
+            link = item.get('content', {}).get('clickThroughUrl', {}).get('url') or item.get('link', '#')
             
+            pub_time = item.get('content', {}).get('pubDate') or item.get('providerPublishTime', 0)
+            
+            if not title:
+                continue # Skip items with no title
+                
+            try:
+                if isinstance(pub_time, str):
+                    date_str = pd.to_datetime(pub_time).strftime('%B %d, %Y')
+                elif pub_time > 0:
+                    date_str = datetime.fromtimestamp(pub_time).strftime('%B %d, %Y')
+                else:
+                    date_str = "Recent"
+            except:
+                date_str = "Recent"
+            
+            valid_news_count += 1
             st.markdown(f"""
             <div style='background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border-left: 2px solid #38bdf8; margin-bottom: 10px;'>
                 <a href="{link}" target="_blank" class="news-link">{title}</a>
-                <div style='color: #64748b; font-size: 0.85rem; margin-top: 5px;'>{publisher} • {date}</div>
+                <div style='color: #64748b; font-size: 0.85rem; margin-top: 5px;'>{publisher} • {date_str}</div>
             </div>
             """, unsafe_allow_html=True)
-    else:
+            
+            if valid_news_count >= 3:
+                break # Limit to top 3 valid news stories
+                
+    if valid_news_count == 0:
         st.write("No recent news articles found for this asset.")
 
     st.markdown("""
@@ -240,7 +255,6 @@ with tab3:
     st.markdown(f"<h3 style='color: #f8fafc;'>Analytical Outlook for {company_name}</h3>", unsafe_allow_html=True)
     st.write("We utilize standard mathematical averages to filter out daily noise and identify the true market trend.")
     
-    # Calculate averages and handle NaN
     df_full['50_Day_Avg'] = df_full['Close'].rolling(window=50).mean()
     df_full['200_Day_Avg'] = df_full['Close'].rolling(window=200).mean()
     
@@ -260,16 +274,12 @@ with tab3:
         rec_color = "#fbbf24"
         rec_desc = "The asset is consolidating or recovering. A clear directional trend has not yet established."
 
-    # Completely rewritten in pure HTML to prevent Streamlit Markdown parsing errors
     st.markdown(f"""
     <div class="glass-card" style="border-top: 4px solid {rec_color};">
         <h2 style='color: {rec_color}; margin-top:0; font-size: 2.2rem; text-align: center; letter-spacing: 1px;'>{recommendation}</h2>
         <p style='font-size: 1.1rem; color: #f8fafc; text-align: center; margin-bottom: 25px;'>{rec_desc}</p>
-        
         <div class="reasoning-box">
-            <h4 style='color: #38bdf8; margin-top:0; display: flex; align-items: center; gap: 8px;'>
-                ⟡ Analytical Breakdown
-            </h4>
+            <h4 style='color: #38bdf8; margin-top:0; display: flex; align-items: center; gap: 8px;'>⟡ Analytical Breakdown</h4>
             <p style='margin-bottom: 15px; color: #e2e8f0;'>By tracking historical moving averages, we can map the current market sentiment mathematically, avoiding emotional decisions:</p>
             <ul style='margin-bottom: 0; color: #e2e8f0; line-height: 1.8;'>
                 <li><b>Step 1:</b> The 50-day average is <b>${latest_50:.2f}</b>. This line represents the short-term mood of the market.</li>

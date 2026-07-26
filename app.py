@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime
 
 # ==========================================
-# 1. INITIALIZATION & MATURE NEON STYLING
+# 1. INITIALIZATION & COMPACT NEON STYLING
 # ==========================================
 st.set_page_config(page_title="SmarVest | Market Intelligence", page_icon="✦", layout="wide")
 
@@ -20,17 +20,32 @@ st.markdown("""
     
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
     
-    /* Refined Glassmorphism Cards */
+    /* COMPACT Glassmorphism Cards */
     .glass-card {
         background: rgba(255, 255, 255, 0.02);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
         border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 12px; 
-        padding: 24px; 
-        margin-bottom: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        border-radius: 8px; 
+        padding: 16px; 
+        margin-bottom: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
+    
+    /* Scrollable Text Box for Long Summaries */
+    .scrollable-text {
+        max-height: 120px;
+        overflow-y: auto;
+        padding-right: 10px;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        color: #cbd5e1;
+        margin-bottom: 10px;
+    }
+    /* Custom Scrollbar for the text box */
+    .scrollable-text::-webkit-scrollbar { width: 6px; }
+    .scrollable-text::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+    .scrollable-text::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 4px; }
     
     /* Subtle Hover Tooltip Engine */
     .hover-tooltip {
@@ -39,13 +54,13 @@ st.markdown("""
         cursor: help; font-weight: 600; transition: all 0.2s ease;
     }
     .hover-tooltip .tooltiptext {
-        visibility: hidden; width: 280px; 
+        visibility: hidden; width: 240px; 
         background-color: rgba(15, 23, 42, 0.98); color: #fff; 
-        text-align: left; border-radius: 6px; padding: 14px;
+        text-align: left; border-radius: 6px; padding: 10px;
         position: absolute; z-index: 50; bottom: 130%; left: 50%;
-        margin-left: -140px; opacity: 0; transition: opacity 0.3s;
-        border: 1px solid #334155; font-size: 0.9rem; font-weight: normal; 
-        box-shadow: 0 10px 25px rgba(0,0,0,0.5); line-height: 1.5;
+        margin-left: -120px; opacity: 0; transition: opacity 0.3s;
+        border: 1px solid #334155; font-size: 0.8rem; font-weight: normal; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5); line-height: 1.4;
     }
     .hover-tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
     .hover-tooltip:hover { color: #7dd3fc; }
@@ -54,17 +69,17 @@ st.markdown("""
     .reasoning-box {
         background: rgba(56, 189, 248, 0.05); 
         border-left: 3px solid #38bdf8;
-        padding: 16px; border-radius: 0 6px 6px 0; margin-top: 15px;
+        padding: 12px; border-radius: 0 6px 6px 0; margin-top: 10px;
     }
     
-    .news-link { color: #38bdf8; text-decoration: none; font-weight: 500; }
+    .news-link { color: #38bdf8; text-decoration: none; font-weight: 600; font-size: 0.95rem; }
     .news-link:hover { text-decoration: underline; color: #7dd3fc; }
 
-    /* Tab Styling */
-    .stTabs [data-baseweb="tab-list"] { gap: 8px; }
+    /* Compact Tab Styling */
+    .stTabs [data-baseweb="tab-list"] { gap: 4px; }
     .stTabs [data-baseweb="tab"] {
-        height: 50px; background-color: rgba(255, 255, 255, 0.03);
-        border-radius: 6px 6px 0px 0px; padding: 10px 20px; color: #cbd5e1; font-weight: 600;
+        height: 40px; background-color: rgba(255, 255, 255, 0.03);
+        border-radius: 6px 6px 0px 0px; padding: 5px 15px; color: #cbd5e1; font-weight: 600; font-size: 0.9rem;
     }
     .stTabs [aria-selected="true"] {
         background-color: rgba(56, 189, 248, 0.1); color: #38bdf8 !important; border-bottom: 2px solid #38bdf8;
@@ -73,44 +88,43 @@ st.markdown("""
     /* Expander Header Styling */
     .streamlit-expanderHeader {
         background-color: rgba(255, 255, 255, 0.02) !important;
-        border-radius: 8px !important;
+        border-radius: 6px !important;
         color: #38bdf8 !important;
-        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+        padding: 10px !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Main App Title Header
+# Main App Title Header (Compact)
 st.markdown("""
-<div style='display: flex; align-items: center; gap: 10px; margin-bottom: 5px;'>
-    <h1 style='color: #38bdf8; margin: 0;'>✦ SmarVest</h1>
-    <h3 style='color: #94a3b8; font-weight: normal; margin: 0; padding-top: 8px;'>| Market Intelligence</h3>
+<div style='display: flex; align-items: center; gap: 8px; margin-bottom: 0px;'>
+    <h2 style='color: #38bdf8; margin: 0;'>✦ SmarVest</h2>
+    <h4 style='color: #94a3b8; font-weight: normal; margin: 0; padding-top: 4px;'>| Market Intelligence</h4>
 </div>
-<p style='color: #64748b; font-size: 1.1rem; margin-bottom: 15px;'>A mature, simplified approach to understanding global equities.</p>
+<p style='color: #64748b; font-size: 0.9rem; margin-bottom: 10px;'>A mature, simplified approach to understanding global equities.</p>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. ABOUT THE PROJECT (Fixed HTML Formatting)
+# 2. ABOUT THE PROJECT (Compact formatting)
 # ==========================================
-with st.expander("ℹ️ About This Project: Purpose & AI Architecture", expanded=False):
-    st.markdown("""<div style="line-height: 1.7; color: #cbd5e1; font-size: 0.98rem; padding: 10px;">
-<h4 style="color: #38bdf8; margin-top: 0;">✦ Platform Overview</h4>
-<p><b>SmarVest</b> is an educational market intelligence platform engineered to bridge the gap between quantitative financial analysis and beginner investor literacy. It translates complex market telemetry into simple, accessible, and actionable concepts.</p>
-<h4 style="color: #38bdf8; margin-top: 15px;">💡 Motivation & Design Philosophy</h4>
-<p>Traditional financial tools often confuse beginners with dense technical charts or alienate them with opaque "black-box" predictive claims. SmarVest was built around the principle of <b>Explainable Intelligence</b>—ensuring that every insight is backed by clear, step-by-step mathematical reasoning that builds user trust.</p>
-<h4 style="color: #38bdf8; margin-top: 15px;">🧠 Applied AI, Machine Learning & Quantitative Prospect</h4>
-<ul style="padding-left: 20px; color: #cbd5e1; line-height: 1.8;">
-<li><b>Quantitative Feature Engineering:</b> The backend executes rolling-window transformations over multi-year historical time-series datasets (such as 50-day and 200-day Simple Moving Averages) to extract underlying momentum indicators and reduce market noise.</li>
-<li><b>Explainable AI (XAI Philosophy):</b> Rather than deploying uninterpretable neural networks that offer no reasoning, the engine uses deterministic logic structures to generate clear directional signals (<i>Accumulate, Hold, Avoid</i>) paired with verifiable mathematical breakdowns.</li>
-<li><b>Resilient ETL Data Pipeline:</b> Built on an automated caching pipeline that handles real-time market data retrieval, cleans missing entries, normalizes timestamps, and dynamically handles API payload variations.</li>
-<li><b>Unstructured Context Synthesis:</b> Integrates live financial news streams and Wall Street analyst price target distributions to ground raw calculations in real-world business context.</li>
+with st.expander("ℹ️ About This Project: Purpose & Architecture", expanded=False):
+    st.markdown("""<div style="line-height: 1.5; color: #cbd5e1; font-size: 0.85rem; padding: 5px;">
+<h5 style="color: #38bdf8; margin-top: 0; margin-bottom: 5px;">✦ Platform Overview</h5>
+<p style="margin-bottom: 10px;"><b>SmarVest</b> translates complex quantitative market telemetry into simple, accessible, and actionable concepts.</p>
+<h5 style="color: #38bdf8; margin-top: 0; margin-bottom: 5px;">💡 Motivation & Design Philosophy</h5>
+<p style="margin-bottom: 10px;">Built on the principle of <b>Explainable Intelligence</b>—ensuring every insight is backed by transparent, step-by-step mathematical reasoning to build user trust instead of relying on opaque predictions.</p>
+<h5 style="color: #38bdf8; margin-top: 0; margin-bottom: 5px;">🧠 Applied Quantitative Logic</h5>
+<ul style="padding-left: 15px; margin-bottom: 0;">
+<li><b>Feature Engineering:</b> Executes rolling transformations over historical time-series (50/200-day Averages) to extract momentum and reduce noise.</li>
+<li><b>Explainable AI (XAI) Logic:</b> Uses deterministic logic structures for directional signals (<i>Accumulate, Hold, Avoid</i>) paired with clear breakdowns.</li>
+<li><b>Resilient ETL Pipeline:</b> Automated caching handles real-time retrieval, cleans missing entries, and dynamically processes API payloads.</li>
+<li><b>Context Synthesis:</b> Integrates news sentiment and Wall Street targets to ground math in real-world business realities.</li>
 </ul>
 </div>""", unsafe_allow_html=True)
 
-st.markdown("<br>", unsafe_allow_html=True)
-
 # ==========================================
-# 3. DATA PIPELINE & SIDEBAR
+# 3. HELPER FUNCTIONS & DATA PIPELINE
 # ==========================================
 st.sidebar.markdown("### ❖ Asset Locator")
 ticker_input = st.sidebar.text_input("Enter Ticker (e.g., AAPL, GOOGL)", "AAPL").upper().strip()
@@ -126,20 +140,32 @@ def format_large_number(num):
     if num >= 1e6: return f"${num/1e6:.2f} Million"
     return f"${num}"
 
+def analyze_sentiment(text):
+    """Simple deterministic sentiment analyzer based on financial keywords."""
+    if not text: return "Neutral 🟡", "#fbbf24"
+    text = text.lower()
+    
+    pos_words = ['surge', 'jump', 'beat', 'top', 'up', 'rally', 'gain', 'growth', 'dividend', 'buy', 'bullish', 'higher', 'strong', 'profit', 'soar', 'record', 'outperform']
+    neg_words = ['drop', 'fall', 'miss', 'down', 'plunge', 'sell', 'bearish', 'lower', 'weak', 'loss', 'lawsuit', 'penalty', 'slow', 'crash', 'downgrade', 'underperform']
+    
+    pos_score = sum(1 for word in pos_words if word in text)
+    neg_score = sum(1 for word in neg_words if word in text)
+    
+    if pos_score > neg_score: return "Positive 🟢", "#4ade80"
+    elif neg_score > pos_score: return "Negative 🔴", "#f43f5e"
+    else: return "Neutral 🟡", "#fbbf24"
+
 @st.cache_data(ttl=3600)
 def fetch_company_data(ticker, years):
     try:
         stock = yf.Ticker(ticker)
-        df_full = stock.history(period="5y") 
-        
-        # Clean missing values in dataset
-        df_full = df_full.dropna(subset=['Close'])
+        df_full = stock.history(period="5y").dropna(subset=['Close'])
         
         if df_full.empty: return None, None, None, None
             
         df_full.reset_index(inplace=True)
         info = stock.info
-        news = stock.news[:5] if stock.news else []
+        news = stock.news[:4] if stock.news else [] # Get top 4 news articles
         
         cutoff_date = pd.Timestamp.now(tz=df_full['Date'].dt.tz) - pd.DateOffset(years=years)
         df_view = df_full[df_full['Date'] >= cutoff_date].copy()
@@ -160,12 +186,12 @@ current_price = float(df_view['Close'].iloc[-1])
 start_price = float(df_view['Close'].iloc[0])
 
 # ==========================================
-# 4. MATURE EDUCATIONAL TABS
+# 4. COMPACT EDUCATIONAL TABS
 # ==========================================
 tab1, tab2, tab3 = st.tabs(["🏛️ Learn & Discover", "📊 Historical Trajectory", "⟡ Strategic Insight"])
 
 # ------------------------------------------
-# TAB 1: LEARN (Comprehensive & Mature)
+# TAB 1: LEARN (Compact & Scrollable)
 # ------------------------------------------
 with tab1:
     summary = info.get('longBusinessSummary', 'Detailed business summary is not available for this asset.')
@@ -173,38 +199,50 @@ with tab1:
     mcap = format_large_number(info.get('marketCap'))
     target_price = info.get('targetMeanPrice', 'N/A')
     
-    st.markdown(f"""<div class="glass-card">
-<h3 style='margin-top:0; color: #f1f5f9;'>The Core Concept: What is Equity?</h3>
-<p style='font-size: 1.05rem; line-height: 1.7; color: #cbd5e1;'>
-When you purchase a <span class="hover-tooltip">Stock<span class="tooltiptext">Also known as 'equity' or 'shares'. It represents a fraction of ownership in a corporation.</span></span>, you are not just buying a ticker on a screen—you are acquiring actual fractional ownership in a living, breathing business. 
-If the company innovates, increases revenue, and expands, the underlying value of the business grows, making your fraction more valuable. 
-</p>
-</div>
-<div class="glass-card">
-<h3 style='margin-top:0; color: #38bdf8;'>Corporate Profile: {company_name}</h3>
-<p style='color: #94a3b8; font-size: 0.95rem;'><b>Sector:</b> {sector} &nbsp;|&nbsp; <b>Market Valuation:</b> {mcap}</p>
-<p style='font-size: 1.05rem; line-height: 1.7; color: #cbd5e1;'>{summary}</p>
-<h4 style='color: #f1f5f9; margin-top: 20px;'>Future Outlook & Analyst Consensus</h4>
-<p style='font-size: 1.05rem; color: #cbd5e1;'>
-While the current price is <b>${current_price:.2f}</b>, Wall Street analysts have a consensus future price target of <b>${target_price if target_price != 'N/A' else 'Unavailable'}</b> for the coming year. 
-<i>(Note: Analyst targets are estimates, not guarantees.)</i>
-</p>
-</div>""", unsafe_allow_html=True)
+    st.markdown(f"""
+    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+        <div class="glass-card" style="flex: 1; min-width: 300px;">
+            <h4 style='margin-top:0; margin-bottom: 8px; color: #f1f5f9;'>What is Equity?</h4>
+            <p style='font-size: 0.85rem; line-height: 1.5; margin: 0; color: #cbd5e1;'>
+                A <span class="hover-tooltip">Stock<span class="tooltiptext">Also known as 'equity' or 'shares'. Represents fractional ownership.</span></span> represents fractional ownership in a business. If the company innovates and expands, the underlying value of the business grows, making your fraction more valuable. 
+            </p>
+        </div>
+        <div class="glass-card" style="flex: 1; min-width: 300px;">
+            <h4 style='margin-top:0; margin-bottom: 8px; color: #f1f5f9;'>Market Vocabulary</h4>
+            <ul style='color: #cbd5e1; line-height: 1.5; font-size: 0.85rem; margin: 0; padding-left: 15px;'>
+                <li><span class="hover-tooltip">Market Cap<span class="tooltiptext">Price per share × total shares. The total size of the company.</span></span>: Total company size.</li>
+                <li><span class="hover-tooltip">Dividend<span class="tooltiptext">Cash distributed back to shareholders from company profits.</span></span>: A cash percentage of profits paid to owners.</li>
+                <li><span class="hover-tooltip">Bull / Bear<span class="tooltiptext">Bull = Rising prices/optimism. Bear = Falling prices/pessimism.</span></span>: Optimistic (Bull) vs Pessimistic (Bear) trends.</li>
+            </ul>
+        </div>
+    </div>
     
-    # Robust News Parsing
-    st.markdown("<h3 style='color: #f1f5f9; margin-top: 30px;'>📰 Real-Time Market News</h3>", unsafe_allow_html=True)
+    <div class="glass-card">
+        <h4 style='margin-top:0; margin-bottom: 5px; color: #38bdf8;'>Corporate Profile: {company_name}</h4>
+        <div style='color: #94a3b8; font-size: 0.8rem; margin-bottom: 10px;'><b>Sector:</b> {sector} &nbsp;|&nbsp; <b>Valuation:</b> {mcap}</div>
+        <div class="scrollable-text">{summary}</div>
+        <div style='font-size: 0.85rem; color: #cbd5e1; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;'>
+            <b>Analyst Consensus:</b> Current price is <b>${current_price:.2f}</b>. Wall Street's 1-year target is <b>${target_price if target_price != 'N/A' else 'Unavailable'}</b>. <i>(Estimates, not guarantees)</i>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # News Parsing with Sentiment & Summaries
+    st.markdown("<h4 style='color: #f1f5f9; margin-top: 15px; margin-bottom: 10px;'>📰 Real-Time Market News & Sentiment</h4>", unsafe_allow_html=True)
     valid_news_count = 0
     if news:
         for item in news:
-            title = item.get('title')
+            title = item.get('title', '')
             publisher = item.get('publisher', 'Financial Press')
             link = item.get('link', '#')
             pub_time = item.get('providerPublishTime', 0)
+            summary_text = "Click to read full coverage."
             
             content = item.get('content')
             if isinstance(content, dict):
                 title = content.get('title', title)
                 pub_time = content.get('pubDate', pub_time)
+                summary_text = content.get('summary', summary_text)
                 
                 provider = content.get('provider')
                 if isinstance(provider, dict):
@@ -214,81 +252,73 @@ While the current price is <b>${current_price:.2f}</b>, Wall Street analysts hav
                 if isinstance(click_url, dict):
                     link = click_url.get('url', link)
             
-            if not title:
-                continue
+            if not title: continue
                 
             try:
-                if isinstance(pub_time, str):
-                    date_str = pd.to_datetime(pub_time).strftime('%B %d, %Y')
-                elif pub_time > 0:
-                    date_str = datetime.fromtimestamp(pub_time).strftime('%B %d, %Y')
-                else:
-                    date_str = "Recent"
-            except Exception:
-                date_str = "Recent"
+                if isinstance(pub_time, str): date_str = pd.to_datetime(pub_time).strftime('%b %d, %Y')
+                elif pub_time > 0: date_str = datetime.fromtimestamp(pub_time).strftime('%b %d, %Y')
+                else: date_str = "Recent"
+            except: date_str = "Recent"
+            
+            # Truncate summary if too long
+            if len(summary_text) > 150: summary_text = summary_text[:147] + "..."
+            
+            # Analyze Sentiment
+            sentiment_label, sentiment_color = analyze_sentiment(title + " " + summary_text)
             
             valid_news_count += 1
-            st.markdown(f"""<div style='background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border-left: 2px solid #38bdf8; margin-bottom: 10px;'>
+            st.markdown(f"""<div style='background: rgba(255,255,255,0.02); padding: 12px; border-radius: 6px; border-left: 3px solid {sentiment_color}; margin-bottom: 10px;'>
 <a href="{link}" target="_blank" class="news-link">{title}</a>
-<div style='color: #64748b; font-size: 0.85rem; margin-top: 5px;'>{publisher} • {date_str}</div>
+<div style='color: #64748b; font-size: 0.75rem; margin-top: 3px; margin-bottom: 6px;'>{publisher} • {date_str}</div>
+<div style='font-size: 0.85rem; color: #cbd5e1; line-height: 1.4; margin-bottom: 6px;'>{summary_text}</div>
+<div style='font-size: 0.75rem; font-weight: bold; color: {sentiment_color}; background: rgba(0,0,0,0.2); display: inline-block; padding: 2px 8px; border-radius: 4px;'>Sentiment: {sentiment_label}</div>
 </div>""", unsafe_allow_html=True)
             
-            if valid_news_count >= 3:
-                break
+            if valid_news_count >= 3: break
                 
     if valid_news_count == 0:
         st.write("No recent news articles found for this asset.")
 
-    st.markdown("""<div class="glass-card" style="margin-top: 30px;">
-<h3 style='margin-top:0; color: #f1f5f9;'>Market Vocabulary</h3>
-<ul style='color: #cbd5e1; line-height: 2;'>
-<li><span class="hover-tooltip">Market Capitalization<span class="tooltiptext">The total dollar market value of a company's outstanding shares. Calculated by multiplying the stock price by total shares.</span></span>: The total size and value of the company.</li>
-<li><span class="hover-tooltip">Dividend Yield<span class="tooltiptext">A financial ratio that shows how much a company pays out in dividends each year relative to its stock price.</span></span>: A percentage of profits distributed back to the shareholders as cash.</li>
-<li><span class="hover-tooltip">Bull vs. Bear Market<span class="tooltiptext">Bull = Rising prices and optimism. Bear = Falling prices (usually 20% or more) and pessimism.</span></span>: Terms used to describe the overall trend of the market (Optimistic vs. Pessimistic).</li>
-</ul>
-</div>""", unsafe_allow_html=True)
-
 # ------------------------------------------
-# TAB 2: HISTORY
+# TAB 2: HISTORY (Compact Chart)
 # ------------------------------------------
 with tab2:
-    st.markdown(f"<h3 style='color: #f8fafc;'>Historical Trajectory ({history_years} Year{'s' if history_years > 1 else ''})</h3>", unsafe_allow_html=True)
-    
     price_diff = current_price - start_price
     pct_change = (price_diff / start_price) * 100
     direction = "appreciated" if price_diff >= 0 else "depreciated"
     color = "#4ade80" if price_diff >= 0 else "#f43f5e"
     
     st.markdown(f"""
-    <p style='font-size: 1.1rem; color: #cbd5e1;'>
-        An initial position taken {history_years} year{'s' if history_years > 1 else ''} ago would have been acquired at <b>${start_price:.2f}</b>. <br>
-        Today, that position is valued at <b>${current_price:.2f}</b>. The asset has <span style='color: {color}; font-weight: bold;'>{direction} by {abs(pct_change):.2f}%</span> over this period.
-    </p>
+    <div style='padding-bottom: 5px;'>
+        <h4 style='color: #f8fafc; margin: 0;'>Historical Trajectory ({history_years} Year{'s' if history_years > 1 else ''})</h4>
+        <p style='font-size: 0.9rem; color: #cbd5e1; margin-top: 5px;'>
+            A position acquired {history_years} year{'s' if history_years > 1 else ''} ago at <b>${start_price:.2f}</b> is now valued at <b>${current_price:.2f}</b>. 
+            The asset has <span style='color: {color}; font-weight: bold;'>{direction} by {abs(pct_change):.2f}%</span>.
+        </p>
+    </div>
     """, unsafe_allow_html=True)
     
+    # Render compact chart
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=df_view['Date'], y=df_view['Close'], 
-        mode='lines', line=dict(color='#38bdf8', width=2.5), 
+        mode='lines', line=dict(color='#38bdf8', width=2), 
         name='Price', fill='tozeroy', fillcolor='rgba(56, 189, 248, 0.05)'
     ))
 
     fig.update_layout(
         template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-        height=400, margin=dict(l=0, r=0, t=10, b=0), hovermode="x unified",
+        height=320, # Shrunk chart height for better visibility
+        margin=dict(l=0, r=0, t=5, b=0), hovermode="x unified",
         xaxis=dict(showgrid=False, showticklabels=True), 
         yaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.05)', tickprefix="$")
     )
     st.plotly_chart(fig, use_container_width=True)
-    st.markdown("<div class='data-credit'>Market Data reliably sourced via Yahoo Finance API</div>", unsafe_allow_html=True)
 
 # ------------------------------------------
-# TAB 3: INSIGHT
+# TAB 3: INSIGHT (Compact Logic Box)
 # ------------------------------------------
 with tab3:
-    st.markdown(f"<h3 style='color: #f8fafc;'>Analytical Outlook for {company_name}</h3>", unsafe_allow_html=True)
-    st.write("We utilize standard mathematical averages to filter out daily noise and identify the true market trend.")
-    
     df_full['50_Day_Avg'] = df_full['Close'].rolling(window=50).mean()
     df_full['200_Day_Avg'] = df_full['Close'].rolling(window=200).mean()
     
@@ -296,30 +326,36 @@ with tab3:
     latest_200 = float(df_full['200_Day_Avg'].dropna().iloc[-1]) if not df_full['200_Day_Avg'].dropna().empty else current_price
     
     if current_price > latest_50 and latest_50 > latest_200:
-        recommendation = "ACCUMULATE / BUY"
+        recommendation = "ACCUMULATE"
         rec_color = "#4ade80"
-        rec_desc = "The asset is exhibiting strong upward momentum. Institutional and retail accumulation is prevalent."
+        rec_desc = "Strong upward momentum. Moving averages indicate institutional accumulation."
     elif current_price < latest_50 and latest_50 < latest_200:
-        recommendation = "AVOID / SELL"
+        recommendation = "AVOID"
         rec_color = "#f43f5e"
-        rec_desc = "The asset is in a downward phase. Market sentiment is currently negative."
+        rec_desc = "Downward phase. Mathematical sentiment is currently negative."
     else:
         recommendation = "HOLD / MONITOR"
         rec_color = "#fbbf24"
-        rec_desc = "The asset is consolidating or recovering. A clear directional trend has not yet established."
+        rec_desc = "Consolidating. A clear directional trend has not yet established."
 
-    st.markdown(f"""<div class="glass-card" style="border-top: 4px solid {rec_color};">
-<h2 style='color: {rec_color}; margin-top:0; font-size: 2.2rem; text-align: center; letter-spacing: 1px;'>{recommendation}</h2>
-<p style='font-size: 1.1rem; color: #f8fafc; text-align: center; margin-bottom: 25px;'>{rec_desc}</p>
-<div class="reasoning-box">
-<h4 style='color: #38bdf8; margin-top:0; display: flex; align-items: center; gap: 8px;'>⟡ Analytical Breakdown</h4>
-<p style='margin-bottom: 15px; color: #e2e8f0;'>By tracking historical moving averages, we can map the current market sentiment mathematically, avoiding emotional decisions:</p>
-<ul style='margin-bottom: 0; color: #e2e8f0; line-height: 1.8;'>
-<li><b>Step 1:</b> The 50-day average is <b>${latest_50:.2f}</b>. This line represents the short-term mood of the market.</li>
-<li><b>Step 2:</b> The 200-day average is <b>${latest_200:.2f}</b>. This line represents the long-term, foundational health of the asset.</li>
-<li><b>Step 3:</b> Because the current price (<b>${current_price:.2f}</b>) is <b>{'higher' if current_price > latest_50 else 'lower'}</b> than the 50-day average, and the 50-day average is <b>{'higher' if latest_50 > latest_200 else 'lower'}</b> than the 200-day average, the mathematical logic points strictly to: <b>{recommendation.split(' / ')[0]}</b>.</li>
-</ul>
-</div>
-</div>""", unsafe_allow_html=True)
+    st.markdown(f"""
+    <div style='padding-bottom: 5px;'>
+        <h4 style='color: #f8fafc; margin: 0;'>Analytical Outlook for {company_name}</h4>
+        <p style='font-size: 0.9rem; color: #cbd5e1; margin-top: 5px;'>Utilizing standard mathematical moving averages to filter daily noise.</p>
+    </div>
     
-    st.markdown("<div class='data-credit'>Calculations processed locally based on standard quantitative metrics. Educational purposes only.</div>", unsafe_allow_html=True)
+    <div class="glass-card" style="border-top: 3px solid {rec_color}; padding: 15px;">
+        <h2 style='color: {rec_color}; margin-top:0; margin-bottom: 5px; font-size: 1.8rem; text-align: center; letter-spacing: 1px;'>{recommendation}</h2>
+        <p style='font-size: 0.9rem; color: #f8fafc; text-align: center; margin-bottom: 15px;'>{rec_desc}</p>
+        
+        <div class="reasoning-box">
+            <h5 style='color: #38bdf8; margin-top:0; margin-bottom: 8px;'>⟡ Analytical Breakdown</h5>
+            <ul style='margin-bottom: 0; color: #e2e8f0; line-height: 1.6; font-size: 0.85rem; padding-left: 20px;'>
+                <li><b>Short-Term Mood:</b> The 50-day average is <b>${latest_50:.2f}</b>.</li>
+                <li><b>Long-Term Base:</b> The 200-day average is <b>${latest_200:.2f}</b>.</li>
+                <li><b>Conclusion:</b> Because the current price (<b>${current_price:.2f}</b>) is <b>{'higher' if current_price > latest_50 else 'lower'}</b> than the 50D, and the 50D is <b>{'higher' if latest_50 > latest_200 else 'lower'}</b> than the 200D, logic points strictly to: <b>{recommendation.split(' / ')[0]}</b>.</li>
+            </ul>
+        </div>
+    </div>
+    <div style='text-align: right; font-size: 10px; color: rgba(255,255,255,0.3);'>Calculations processed locally based on standard quantitative metrics. Educational purposes only.</div>
+    """, unsafe_allow_html=True)

@@ -5,302 +5,279 @@ import pandas as pd
 from datetime import datetime
 
 # ==========================================
-# 1. INITIALIZATION & NEON UI STYLING
+# 1. INITIALIZATION & MATURE NEON STYLING
 # ==========================================
-st.set_page_config(page_title="NeonVest - Learn to Invest", page_icon="✨", layout="wide")
+st.set_page_config(page_title="NeonVest | Market Intelligence", page_icon="✦", layout="wide")
 
-# Injecting Custom CSS for Glassmorphism, Neon Gradients, and Tooltips
 st.markdown("""
     <style>
-    /* Neon Dark Background - Matching image_48edd6.jpg */
+    /* Neon Dark Background */
     .stApp { 
-        background: linear-gradient(135deg, #111424 0%, #1a1b3b 100%); 
+        background: linear-gradient(135deg, #0d1117 0%, #161b22 100%); 
         color: #e2e8f0; 
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
     }
     
-    /* Hide Streamlit Branding for a cleaner look */
-    #MainMenu {visibility: hidden;} 
-    footer {visibility: hidden;} 
-    header {visibility: hidden;}
+    #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
     
-    /* Glassmorphism Cards */
+    /* Refined Glassmorphism Cards */
     .glass-card {
-        background: rgba(255, 255, 255, 0.03);
+        background: rgba(255, 255, 255, 0.02);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px; 
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px; 
         padding: 24px; 
         margin-bottom: 20px;
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
     
-    /* Custom Hover Tooltip Engine */
+    /* Subtle Hover Tooltip Engine */
     .hover-tooltip {
-        position: relative; 
-        display: inline-block;
-        border-bottom: 2px dotted #22d3ee; 
-        color: #22d3ee; 
-        cursor: help; 
-        font-weight: 600;
-        transition: all 0.2s ease;
+        position: relative; display: inline-block;
+        border-bottom: 1px dashed #38bdf8; color: #38bdf8; 
+        cursor: help; font-weight: 600; transition: all 0.2s ease;
     }
     .hover-tooltip .tooltiptext {
-        visibility: hidden; 
-        width: 260px; 
-        background-color: rgba(15, 23, 42, 0.95);
-        color: #fff; 
-        text-align: left; 
-        border-radius: 8px; 
-        padding: 12px;
-        position: absolute; 
-        z-index: 50; 
-        bottom: 130%; 
-        left: 50%;
-        margin-left: -130px; 
-        opacity: 0; 
-        transition: opacity 0.3s;
-        border: 1px solid #334155; 
-        font-size: 0.9rem; 
-        font-weight: normal; 
-        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        visibility: hidden; width: 280px; 
+        background-color: rgba(15, 23, 42, 0.98); color: #fff; 
+        text-align: left; border-radius: 6px; padding: 14px;
+        position: absolute; z-index: 50; bottom: 130%; left: 50%;
+        margin-left: -140px; opacity: 0; transition: opacity 0.3s;
+        border: 1px solid #334155; font-size: 0.9rem; font-weight: normal; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5); line-height: 1.5;
     }
-    .hover-tooltip:hover .tooltiptext { 
-        visibility: visible; 
-        opacity: 1; 
-    }
-    .hover-tooltip:hover {
-        color: #67e8f9;
-    }
+    .hover-tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+    .hover-tooltip:hover { color: #7dd3fc; }
     
     /* Insight / Reasoning Box */
     .reasoning-box {
-        background: rgba(34, 211, 238, 0.05); 
-        border-left: 4px solid #22d3ee;
-        padding: 16px; 
-        border-radius: 0 8px 8px 0; 
-        margin-top: 15px;
+        background: rgba(56, 189, 248, 0.05); 
+        border-left: 3px solid #38bdf8;
+        padding: 16px; border-radius: 0 6px 6px 0; margin-top: 15px;
     }
     
-    /* Tiny Data Credit */
-    .data-credit { 
-        text-align: right; 
-        font-size: 10px; 
-        color: rgba(255,255,255,0.4); 
-        margin-top: -5px; 
-        margin-bottom: 15px;
-    }
+    .news-link { color: #38bdf8; text-decoration: none; font-weight: 500; }
+    .news-link:hover { text-decoration: underline; color: #7dd3fc; }
 
     /* Tab Styling */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-    }
+    .stTabs [data-baseweb="tab-list"] { gap: 8px; }
     .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        white-space: pre-wrap;
-        background-color: rgba(255, 255, 255, 0.05);
-        border-radius: 8px 8px 0px 0px;
-        padding: 10px 20px;
-        color: #cbd5e1;
+        height: 50px; background-color: rgba(255, 255, 255, 0.03);
+        border-radius: 6px 6px 0px 0px; padding: 10px 20px; color: #cbd5e1; font-weight: 600;
     }
     .stTabs [aria-selected="true"] {
-        background-color: rgba(34, 211, 238, 0.1);
-        color: #22d3ee !important;
-        border-bottom: 2px solid #22d3ee;
+        background-color: rgba(56, 189, 248, 0.1); color: #38bdf8 !important; border-bottom: 2px solid #38bdf8;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Main Header
 st.markdown("""
 <div style='display: flex; align-items: center; gap: 10px; margin-bottom: 5px;'>
-    <h1 style='color: #22d3ee; margin: 0;'>✨ NeonVest</h1>
-    <h3 style='color: #cbd5e1; font-weight: normal; margin: 0; padding-top: 8px;'>| The friendly way to learn stocks</h3>
+    <h1 style='color: #38bdf8; margin: 0;'>✦ NeonVest</h1>
+    <h3 style='color: #94a3b8; font-weight: normal; margin: 0; padding-top: 8px;'>| Market Intelligence</h3>
 </div>
-<p style='color: #94a3b8; font-size: 1.1rem; margin-bottom: 30px;'>Welcome to your personal, beginner-friendly gateway to the stock market.</p>
+<p style='color: #64748b; font-size: 1.1rem; margin-bottom: 30px;'>A mature, simplified approach to understanding global equities.</p>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. SIDEBAR CONFIGURATION
+# 2. DATA PIPELINE & SIDEBAR
 # ==========================================
-st.sidebar.markdown("### 🔍 Find a Company")
-ticker_input = st.sidebar.text_input("Type a ticker (e.g., AAPL, TSLA)", "AAPL").upper().strip()
-st.sidebar.caption("💡 Not sure what to type? Try **MSFT** for Microsoft or **AMZN** for Amazon.")
+st.sidebar.markdown("### ❖ Asset Locator")
+ticker_input = st.sidebar.text_input("Enter Ticker (e.g., AAPL, GOOGL)", "AAPL").upper().strip()
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("### ⏳ Time Travel")
-history_years = st.sidebar.radio("View history for the last:", [1, 2, 3, 5], format_func=lambda x: f"{x} Year{'s' if x > 1 else ''}")
+st.sidebar.markdown("### ◷ Time Horizon")
+history_years = st.sidebar.radio("Analyze data for the last:", [1, 2, 3, 5], format_func=lambda x: f"{x} Year{'s' if x > 1 else ''}")
+
+def format_large_number(num):
+    if num is None: return "N/A"
+    if num >= 1e12: return f"${num/1e12:.2f} Trillion"
+    if num >= 1e9: return f"${num/1e9:.2f} Billion"
+    if num >= 1e6: return f"${num/1e6:.2f} Million"
+    return f"${num}"
 
 @st.cache_data(ttl=3600)
 def fetch_company_data(ticker, years):
-    """Fetches historical price data and basic company info."""
     try:
         stock = yf.Ticker(ticker)
-        # We fetch 5y max so we always have enough data for a 200-day average calculation in the Insight tab
         df_full = stock.history(period="5y") 
-        if df_full.empty:
-            return None, None
+        
+        # FIX FOR NaN BUG: Drop any rows where closing price is missing
+        df_full = df_full.dropna(subset=['Close'])
+        
+        if df_full.empty: return None, None, None, None
             
         df_full.reset_index(inplace=True)
         info = stock.info
+        news = stock.news[:3] # Get top 3 news items
         
-        # Filter for the requested timeframe for the chart
         cutoff_date = pd.Timestamp.now(tz=df_full['Date'].dt.tz) - pd.DateOffset(years=years)
         df_view = df_full[df_full['Date'] >= cutoff_date].copy()
         
-        return df_view, df_full, info
+        return df_view, df_full, info, news
     except Exception:
-        return None, None, None
+        return None, None, None, None
 
-with st.spinner("Gathering market data..."):
-    df_view, df_full, company_info = fetch_company_data(ticker_input, history_years)
+with st.spinner("Synchronizing market data..."):
+    df_view, df_full, info, news = fetch_company_data(ticker_input, history_years)
 
 if df_view is None or df_view.empty:
-    st.error(f"Oops! We couldn't find data for '{ticker_input}'. Try typing 'AAPL' or 'MSFT' instead.")
+    st.error(f"Asset '{ticker_input}' could not be located. Please verify the ticker symbol.")
     st.stop()
 
-# Basic Info Extraction
-company_name = company_info.get('shortName', ticker_input) if company_info else ticker_input
-industry = company_info.get('industry', 'their industry') if company_info else 'their industry'
+company_name = info.get('shortName', ticker_input) if info else ticker_input
 current_price = float(df_view['Close'].iloc[-1])
 start_price = float(df_view['Close'].iloc[0])
 
 # ==========================================
-# 3. THE THREE BEGINNER TABS
+# 3. MATURE EDUCATIONAL TABS
 # ==========================================
-tab1, tab2, tab3 = st.tabs(["🍕 Learn", "📈 History", "💡 Insight"])
+tab1, tab2, tab3 = st.tabs(["🏛️ Learn & Discover", "📊 Historical Trajectory", "⟡ Strategic Insight"])
 
 # ------------------------------------------
-# TAB 1: LEARN (Analogies & Tooltips)
+# TAB 1: LEARN (Comprehensive & Mature)
 # ------------------------------------------
 with tab1:
+    summary = info.get('longBusinessSummary', 'Detailed business summary is not available for this asset.')
+    sector = info.get('sector', 'Unknown Sector')
+    mcap = format_large_number(info.get('marketCap'))
+    target_price = info.get('targetMeanPrice', 'N/A')
+    
     st.markdown(f"""
     <div class="glass-card">
-        <h2 style='margin-top:0; color: #f8fafc;'>What exactly is a Stock?</h2>
-        <p style='font-size: 1.1rem; line-height: 1.7; color: #cbd5e1;'>
-            Imagine a massive, highly successful pizza shop. The owners want to open 10 more shops across the country, but they need money to do it. <br><br>
-            So, they divide the company into millions of tiny "slices" and sell them to people like you. 
-            When you buy a stock, you literally own a <span class="hover-tooltip">Share<span class="tooltiptext">A single piece of ownership in a company. You are a part-owner!</span></span> of that business. 
-            If the company sells lots of pizza and becomes more popular, your slice becomes more valuable. If you want, you can sell your slice to someone else later for a profit!
+        <h3 style='margin-top:0; color: #f1f5f9;'>The Core Concept: What is Equity?</h3>
+        <p style='font-size: 1.05rem; line-height: 1.7; color: #cbd5e1;'>
+            When you purchase a <span class="hover-tooltip">Stock<span class="tooltiptext">Also known as 'equity' or 'shares'. It represents a fraction of ownership in a corporation.</span></span>, you are not just buying a ticker on a screen—you are acquiring actual fractional ownership in a living, breathing business. 
+            If the company innovates, increases revenue, and expands, the underlying value of the business grows, making your fraction more valuable. 
         </p>
     </div>
     
     <div class="glass-card">
-        <h2 style='margin-top:0; color: #f8fafc;'>About {company_name}</h2>
-        <p style='font-size: 1.1rem; line-height: 1.7; color: #cbd5e1;'>
-            You are looking at <b>{company_name}</b>, which operates in the {industry} sector. <br><br>
-            If you buy shares in this company, you are placing a bet that they will continue to grow, sell more products, and become more successful in the future.
+        <h3 style='margin-top:0; color: #38bdf8;'>Corporate Profile: {company_name}</h3>
+        <p style='color: #94a3b8; font-size: 0.95rem;'><b>Sector:</b> {sector} &nbsp;|&nbsp; <b>Market Valuation:</b> {mcap}</p>
+        <p style='font-size: 1.05rem; line-height: 1.7; color: #cbd5e1;'>{summary}</p>
+        
+        <h4 style='color: #f1f5f9; margin-top: 20px;'>Future Outlook & Analyst Consensus</h4>
+        <p style='font-size: 1.05rem; color: #cbd5e1;'>
+            While the current price is <b>${current_price:.2f}</b>, Wall Street analysts have a consensus future price target of <b>${target_price if target_price != 'N/A' else 'Unavailable'}</b> for the coming year. 
+            <i>(Note: Analyst targets are estimates, not guarantees.)</i>
         </p>
     </div>
+    """, unsafe_allow_html=True)
     
-    <div class="glass-card">
-        <h2 style='margin-top:0; color: #f8fafc;'>Hover to Learn: Market Vocabulary</h2>
-        <ul style='color: #cbd5e1;'>
-            <li style='margin-bottom: 15px; font-size: 1.1rem;'>
-                <span class="hover-tooltip">Volatility<span class="tooltiptext">How 'jumpy' a stock price is. Think of it like a wild roller coaster vs. a calm, steady train.</span></span>: 
-                Some stocks jump up and down a lot every day. Others move very slowly.
-            </li>
-            <li style='margin-bottom: 15px; font-size: 1.1rem;'>
-                <span class="hover-tooltip">Dividend<span class="tooltiptext">A cash 'thank you' gift the company deposits directly into your account just for holding their stock.</span></span>: 
-                Some mature companies pay you a little bit of cash every few months just to say thank you for being an owner.
-            </li>
-            <li style='margin-bottom: 15px; font-size: 1.1rem;'>
-                <span class="hover-tooltip">Volume<span class="tooltiptext">The number of shares traded in a single day. High volume means lots of people are interested today!</span></span>: 
-                How many people are buying and selling slices of the pizza today.
-            </li>
+    # News Section
+    st.markdown("<h3 style='color: #f1f5f9; margin-top: 30px;'>📰 Real-Time Market News</h3>", unsafe_allow_html=True)
+    if news:
+        for item in news:
+            title = item.get('title', 'Market Update')
+            publisher = item.get('publisher', 'Financial Press')
+            link = item.get('link', '#')
+            # Handle Yahoo Finance API timestamp formatting
+            try:
+                date = datetime.fromtimestamp(item.get('providerPublishTime', 0)).strftime('%B %d, %Y')
+            except:
+                date = "Recent"
+            
+            st.markdown(f"""
+            <div style='background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border-left: 2px solid #38bdf8; margin-bottom: 10px;'>
+                <a href="{link}" target="_blank" class="news-link">{title}</a>
+                <div style='color: #64748b; font-size: 0.85rem; margin-top: 5px;'>{publisher} • {date}</div>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.write("No recent news articles found for this asset.")
+
+    st.markdown("""
+    <div class="glass-card" style="margin-top: 30px;">
+        <h3 style='margin-top:0; color: #f1f5f9;'>Market Vocabulary</h3>
+        <ul style='color: #cbd5e1; line-height: 2;'>
+            <li><span class="hover-tooltip">Market Capitalization<span class="tooltiptext">The total dollar market value of a company's outstanding shares. Calculated by multiplying the stock price by total shares.</span></span>: The total size and value of the company.</li>
+            <li><span class="hover-tooltip">Dividend Yield<span class="tooltiptext">A financial ratio that shows how much a company pays out in dividends each year relative to its stock price.</span></span>: A percentage of profits distributed back to the shareholders as cash.</li>
+            <li><span class="hover-tooltip">Bull vs. Bear Market<span class="tooltiptext">Bull = Rising prices and optimism. Bear = Falling prices (usually 20% or more) and pessimism.</span></span>: Terms used to describe the overall trend of the market (Optimistic vs. Pessimistic).</li>
         </ul>
     </div>
     """, unsafe_allow_html=True)
 
 # ------------------------------------------
-# TAB 2: HISTORY
+# TAB 2: HISTORY (Bug-Free)
 # ------------------------------------------
 with tab2:
-    st.markdown(f"<h3 style='color: #f8fafc;'>The ups and downs over the last {history_years} year{'s' if history_years > 1 else ''}</h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color: #f8fafc;'>Historical Trajectory ({history_years} Year{'s' if history_years > 1 else ''})</h3>", unsafe_allow_html=True)
     
     price_diff = current_price - start_price
     pct_change = (price_diff / start_price) * 100
-    direction = "grown" if price_diff >= 0 else "dropped"
-    color = "#4ade80" if price_diff >= 0 else "#f472b6"
+    direction = "appreciated" if price_diff >= 0 else "depreciated"
+    color = "#4ade80" if price_diff >= 0 else "#f43f5e"
     
     st.markdown(f"""
     <p style='font-size: 1.1rem; color: #cbd5e1;'>
-        If you bought one share {history_years} year{'s' if history_years > 1 else ''} ago, it would have cost you <b>${start_price:.2f}</b>. <br>
-        Today, that same share is worth <b>${current_price:.2f}</b>. The price has <span style='color: {color}; font-weight: bold;'>{direction} by {abs(pct_change):.1f}%</span>.
+        An initial position taken {history_years} year{'s' if history_years > 1 else ''} ago would have been acquired at <b>${start_price:.2f}</b>. <br>
+        Today, that position is valued at <b>${current_price:.2f}</b>. The asset has <span style='color: {color}; font-weight: bold;'>{direction} by {abs(pct_change):.2f}%</span> over this period.
     </p>
     """, unsafe_allow_html=True)
     
-    # Compact, beginner-friendly chart
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=df_view['Date'], y=df_view['Close'], 
-        mode='lines', 
-        line=dict(color='#22d3ee', width=3), 
-        name='Price',
-        fill='tozeroy',
-        fillcolor='rgba(34, 211, 238, 0.08)'
+        mode='lines', line=dict(color='#38bdf8', width=2.5), 
+        name='Price', fill='tozeroy', fillcolor='rgba(56, 189, 248, 0.05)'
     ))
 
     fig.update_layout(
-        template="plotly_dark",
-        paper_bgcolor='rgba(0,0,0,0)', 
-        plot_bgcolor='rgba(0,0,0,0)',
-        height=350, # Compact height
-        margin=dict(l=0, r=0, t=10, b=0),
-        hovermode="x unified",
+        template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+        height=400, margin=dict(l=0, r=0, t=10, b=0), hovermode="x unified",
         xaxis=dict(showgrid=False, showticklabels=True), 
         yaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.05)', tickprefix="$")
     )
     st.plotly_chart(fig, use_container_width=True)
-    st.markdown("<div class='data-credit'>Verified Market Data provided by: Yahoo Finance</div>", unsafe_allow_html=True)
+    st.markdown("<div class='data-credit'>Market Data reliably sourced via Yahoo Finance API</div>", unsafe_allow_html=True)
 
 # ------------------------------------------
-# TAB 3: INSIGHT (Educational Recommendation)
+# TAB 3: INSIGHT (Pure HTML Fix)
 # ------------------------------------------
 with tab3:
-    st.markdown(f"<h3 style='color: #f8fafc;'>Educational Market Insight for {company_name}</h3>", unsafe_allow_html=True)
-    st.write("We use simple math to figure out the 'trend' (direction) of a stock so you can make informed decisions.")
+    st.markdown(f"<h3 style='color: #f8fafc;'>Analytical Outlook for {company_name}</h3>", unsafe_allow_html=True)
+    st.write("We utilize standard mathematical averages to filter out daily noise and identify the true market trend.")
     
-    # Calculate simple moving averages using the full 5-year dataset to ensure we have enough data
+    # Calculate averages and handle NaN
     df_full['50_Day_Avg'] = df_full['Close'].rolling(window=50).mean()
     df_full['200_Day_Avg'] = df_full['Close'].rolling(window=200).mean()
     
-    # Get the latest values
-    latest_50 = float(df_full['50_Day_Avg'].iloc[-1]) if not pd.isna(df_full['50_Day_Avg'].iloc[-1]) else current_price
-    latest_200 = float(df_full['200_Day_Avg'].iloc[-1]) if not pd.isna(df_full['200_Day_Avg'].iloc[-1]) else current_price
+    latest_50 = float(df_full['50_Day_Avg'].dropna().iloc[-1]) if not df_full['50_Day_Avg'].dropna().empty else current_price
+    latest_200 = float(df_full['200_Day_Avg'].dropna().iloc[-1]) if not df_full['200_Day_Avg'].dropna().empty else current_price
     
-    # Simple Logic Gate for Recommendation
     if current_price > latest_50 and latest_50 > latest_200:
-        recommendation = "BUY 🟢"
+        recommendation = "ACCUMULATE / BUY"
         rec_color = "#4ade80"
-        rec_desc = "The stock is in a strong upward trend. People are consistently buying it."
+        rec_desc = "The asset is exhibiting strong upward momentum. Institutional and retail accumulation is prevalent."
     elif current_price < latest_50 and latest_50 < latest_200:
-        recommendation = "SELL / WAIT 🔴"
-        rec_color = "#f472b6"
-        rec_desc = "The stock is in a downward trend. It might be best to wait until it recovers."
+        recommendation = "AVOID / SELL"
+        rec_color = "#f43f5e"
+        rec_desc = "The asset is in a downward phase. Market sentiment is currently negative."
     else:
-        recommendation = "HOLD / CAUTIOUS 🟡"
+        recommendation = "HOLD / MONITOR"
         rec_color = "#fbbf24"
-        rec_desc = "The stock is moving sideways or recovering from a drop. It's in a 'wait and see' phase."
+        rec_desc = "The asset is consolidating or recovering. A clear directional trend has not yet established."
 
+    # Completely rewritten in pure HTML to prevent Streamlit Markdown parsing errors
     st.markdown(f"""
     <div class="glass-card" style="border-top: 4px solid {rec_color};">
-        <h2 style='color: {rec_color}; margin-top:0; font-size: 2.5rem; text-align: center;'>{recommendation}</h2>
-        <p style='font-size: 1.2rem; color: #f8fafc; text-align: center;'>{rec_desc}</p>
+        <h2 style='color: {rec_color}; margin-top:0; font-size: 2.2rem; text-align: center; letter-spacing: 1px;'>{recommendation}</h2>
+        <p style='font-size: 1.1rem; color: #f8fafc; text-align: center; margin-bottom: 25px;'>{rec_desc}</p>
         
         <div class="reasoning-box">
-            <h4 style='color: #22d3ee; margin-top:0; display: flex; align-items: center; gap: 8px;'>
-                🔍 How we got this result (Step-by-Step):
+            <h4 style='color: #38bdf8; margin-top:0; display: flex; align-items: center; gap: 8px;'>
+                ⟡ Analytical Breakdown
             </h4>
-            <p style='margin-bottom: 10px; color: #e2e8f0;'>To avoid guessing, investors use "Averages" to smooth out the daily roller coaster. Here is the math we ran on {ticker_input}:</p>
+            <p style='margin-bottom: 15px; color: #e2e8f0;'>By tracking historical moving averages, we can map the current market sentiment mathematically, avoiding emotional decisions:</p>
             <ul style='margin-bottom: 0; color: #e2e8f0; line-height: 1.8;'>
-                <li><b>Step 1:</b> We calculated the average price over the last 50 days (<b>${latest_50:.2f}</b>). This shows the short-term mood.</li>
-                <li><b>Step 2:</b> We calculated the average price over the last 200 days (<b>${latest_200:.2f}</b>). This shows the long-term health.</li>
-                <li><b>Step 3:</b> Because the current price (${current_price:.2f}) is <b>{'higher' if current_price > latest_50 else 'lower'}</b> than the 50-day average, and the 50-day average is <b>{'higher' if latest_50 > latest_200 else 'lower'}</b> than the 200-day average, the mathematical trend points to: <b>{recommendation.split()[0]}</b>.</li>
+                <li><b>Step 1:</b> The 50-day average is <b>${latest_50:.2f}</b>. This line represents the short-term mood of the market.</li>
+                <li><b>Step 2:</b> The 200-day average is <b>${latest_200:.2f}</b>. This line represents the long-term, foundational health of the asset.</li>
+                <li><b>Step 3:</b> Because the current price (<b>${current_price:.2f}</b>) is <b>{'higher' if current_price > latest_50 else 'lower'}</b> than the 50-day average, and the 50-day average is <b>{'higher' if latest_50 > latest_200 else 'lower'}</b> than the 200-day average, the mathematical logic points strictly to: <b>{recommendation.split(' / ')[0]}</b>.</li>
             </ul>
         </div>
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("<div class='data-credit'>Calculations processed locally based on historical pricing. Intended for educational purposes, not financial advice.</div>", unsafe_allow_html=True)
+    st.markdown("<div class='data-credit'>Calculations processed locally based on standard quantitative metrics. Educational purposes only.</div>", unsafe_allow_html=True)

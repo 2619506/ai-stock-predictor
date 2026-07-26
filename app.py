@@ -2,7 +2,7 @@ import streamlit as st
 import yfinance as yf
 import plotly.graph_objs as go
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # ==========================================
 # 1. INITIALIZATION & NEON UI STYLING
@@ -12,9 +12,9 @@ st.set_page_config(page_title="NeonVest - Learn to Invest", page_icon="✨", lay
 # Injecting Custom CSS for Glassmorphism, Neon Gradients, and Tooltips
 st.markdown("""
     <style>
-    /* Neon Dark Background */
+    /* Neon Dark Background - Matching image_48edd6.jpg */
     .stApp { 
-        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); 
+        background: linear-gradient(135deg, #111424 0%, #1a1b3b 100%); 
         color: #e2e8f0; 
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
     }
@@ -26,14 +26,14 @@ st.markdown("""
     
     /* Glassmorphism Cards */
     .glass-card {
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.03);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 16px; 
         padding: 24px; 
         margin-bottom: 20px;
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
     }
     
     /* Custom Hover Tooltip Engine */
@@ -48,17 +48,17 @@ st.markdown("""
     }
     .hover-tooltip .tooltiptext {
         visibility: hidden; 
-        width: 240px; 
+        width: 260px; 
         background-color: rgba(15, 23, 42, 0.95);
         color: #fff; 
-        text-align: center; 
+        text-align: left; 
         border-radius: 8px; 
         padding: 12px;
         position: absolute; 
         z-index: 50; 
         bottom: 130%; 
         left: 50%;
-        margin-left: -120px; 
+        margin-left: -130px; 
         opacity: 0; 
         transition: opacity 0.3s;
         border: 1px solid #334155; 
@@ -74,10 +74,10 @@ st.markdown("""
         color: #67e8f9;
     }
     
-    /* Transparent AI Insight Box */
-    .ai-insight {
-        background: rgba(147, 51, 234, 0.15); 
-        border-left: 4px solid #c084fc;
+    /* Insight / Reasoning Box */
+    .reasoning-box {
+        background: rgba(34, 211, 238, 0.05); 
+        border-left: 4px solid #22d3ee;
         padding: 16px; 
         border-radius: 0 8px 8px 0; 
         margin-top: 15px;
@@ -88,8 +88,8 @@ st.markdown("""
         text-align: right; 
         font-size: 10px; 
         color: rgba(255,255,255,0.4); 
-        margin-top: -10px; 
-        margin-bottom: 20px;
+        margin-top: -5px; 
+        margin-bottom: 15px;
     }
 
     /* Tab Styling */
@@ -113,8 +113,13 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Main Header
-st.markdown("<h1 style='color: #22d3ee; display: flex; align-items: center; gap: 10px;'>✨ NeonVest <span style='font-size: 1.2rem; color: #cbd5e1; font-weight: normal;'>| The friendly way to learn stocks</span></h1>", unsafe_allow_html=True)
-st.write("Welcome to your personal, beginner-friendly gateway to the stock market.")
+st.markdown("""
+<div style='display: flex; align-items: center; gap: 10px; margin-bottom: 5px;'>
+    <h1 style='color: #22d3ee; margin: 0;'>✨ NeonVest</h1>
+    <h3 style='color: #cbd5e1; font-weight: normal; margin: 0; padding-top: 8px;'>| The friendly way to learn stocks</h3>
+</div>
+<p style='color: #94a3b8; font-size: 1.1rem; margin-bottom: 30px;'>Welcome to your personal, beginner-friendly gateway to the stock market.</p>
+""", unsafe_allow_html=True)
 
 # ==========================================
 # 2. SIDEBAR CONFIGURATION
@@ -123,54 +128,69 @@ st.sidebar.markdown("### 🔍 Find a Company")
 ticker_input = st.sidebar.text_input("Type a ticker (e.g., AAPL, TSLA)", "AAPL").upper().strip()
 st.sidebar.caption("💡 Not sure what to type? Try **MSFT** for Microsoft or **AMZN** for Amazon.")
 
+st.sidebar.markdown("---")
+st.sidebar.markdown("### ⏳ Time Travel")
+history_years = st.sidebar.radio("View history for the last:", [1, 2, 3, 5], format_func=lambda x: f"{x} Year{'s' if x > 1 else ''}")
+
 @st.cache_data(ttl=3600)
-def fetch_basic_data(ticker):
-    """Fetches exactly 90 days of data to keep charts clean and digestible for beginners."""
-    end = datetime.today()
-    start = end - timedelta(days=90)
+def fetch_company_data(ticker, years):
+    """Fetches historical price data and basic company info."""
     try:
-        df = yf.download(ticker, start=start, end=end, progress=False)
-        if not df.empty:
-            df.reset_index(inplace=True)
-            # Flatten multi-index columns if they exist (yfinance quirk)
-            if isinstance(df.columns, pd.MultiIndex):
-                df.columns = df.columns.droplevel(1)
-        return df
+        stock = yf.Ticker(ticker)
+        # We fetch 5y max so we always have enough data for a 200-day average calculation in the Insight tab
+        df_full = stock.history(period="5y") 
+        if df_full.empty:
+            return None, None
+            
+        df_full.reset_index(inplace=True)
+        info = stock.info
+        
+        # Filter for the requested timeframe for the chart
+        cutoff_date = pd.Timestamp.now(tz=df_full['Date'].dt.tz) - pd.DateOffset(years=years)
+        df_view = df_full[df_full['Date'] >= cutoff_date].copy()
+        
+        return df_view, df_full, info
     except Exception:
-        return pd.DataFrame()
+        return None, None, None
 
-with st.spinner("Fetching data in a beginner-friendly way..."):
-    df = fetch_basic_data(ticker_input)
+with st.spinner("Gathering market data..."):
+    df_view, df_full, company_info = fetch_company_data(ticker_input, history_years)
 
-if df.empty or 'Close' not in df.columns:
-    st.error(f"Oops! We couldn't find data for '{ticker_input}'. Try typing 'AAPL' instead.")
+if df_view is None or df_view.empty:
+    st.error(f"Oops! We couldn't find data for '{ticker_input}'. Try typing 'AAPL' or 'MSFT' instead.")
     st.stop()
 
-# Extract simple metrics
-try:
-    current_price = float(df['Close'].iloc[-1])
-    start_price = float(df['Close'].iloc[0])
-    is_healthy = current_price > start_price
-except Exception:
-    current_price, start_price, is_healthy = 0.0, 0.0, True
+# Basic Info Extraction
+company_name = company_info.get('shortName', ticker_input) if company_info else ticker_input
+industry = company_info.get('industry', 'their industry') if company_info else 'their industry'
+current_price = float(df_view['Close'].iloc[-1])
+start_price = float(df_view['Close'].iloc[0])
 
 # ==========================================
-# 3. BEGINNER-FRIENDLY TABS
+# 3. THE THREE BEGINNER TABS
 # ==========================================
-tab1, tab2, tab3 = st.tabs(["🍕 Learn", "📈 Simple Charts", "🧠 AI Explanations"])
+tab1, tab2, tab3 = st.tabs(["🍕 Learn", "📈 History", "💡 Insight"])
 
 # ------------------------------------------
 # TAB 1: LEARN (Analogies & Tooltips)
 # ------------------------------------------
 with tab1:
-    st.markdown("""
+    st.markdown(f"""
     <div class="glass-card">
         <h2 style='margin-top:0; color: #f8fafc;'>What exactly is a Stock?</h2>
         <p style='font-size: 1.1rem; line-height: 1.7; color: #cbd5e1;'>
             Imagine a massive, highly successful pizza shop. The owners want to open 10 more shops across the country, but they need money to do it. <br><br>
             So, they divide the company into millions of tiny "slices" and sell them to people like you. 
-            When you buy a stock, you literally own a <span class="hover-tooltip">Share<span class="tooltiptext">A single piece of ownership in a company. You are part-owner!</span></span> of that business. 
+            When you buy a stock, you literally own a <span class="hover-tooltip">Share<span class="tooltiptext">A single piece of ownership in a company. You are a part-owner!</span></span> of that business. 
             If the company sells lots of pizza and becomes more popular, your slice becomes more valuable. If you want, you can sell your slice to someone else later for a profit!
+        </p>
+    </div>
+    
+    <div class="glass-card">
+        <h2 style='margin-top:0; color: #f8fafc;'>About {company_name}</h2>
+        <p style='font-size: 1.1rem; line-height: 1.7; color: #cbd5e1;'>
+            You are looking at <b>{company_name}</b>, which operates in the {industry} sector. <br><br>
+            If you buy shares in this company, you are placing a bet that they will continue to grow, sell more products, and become more successful in the future.
         </p>
     </div>
     
@@ -194,74 +214,93 @@ with tab1:
     """, unsafe_allow_html=True)
 
 # ------------------------------------------
-# TAB 2: SIMPLE CHARTS
+# TAB 2: HISTORY
 # ------------------------------------------
 with tab2:
-    st.markdown(f"<h3 style='color: #f8fafc;'>Let's look at {ticker_input} over the last 90 days</h3>", unsafe_allow_html=True)
-    st.write("We kept this chart simple. No confusing numbers or overwhelming grids, just the general direction of the company so you can see how it is feeling.")
+    st.markdown(f"<h3 style='color: #f8fafc;'>The ups and downs over the last {history_years} year{'s' if history_years > 1 else ''}</h3>", unsafe_allow_html=True)
     
-    view_mode = st.radio("Choose your visual style:", ["Simple Line (Beginner)", "Candlestick (Advanced)"], horizontal=True)
+    price_diff = current_price - start_price
+    pct_change = (price_diff / start_price) * 100
+    direction = "grown" if price_diff >= 0 else "dropped"
+    color = "#4ade80" if price_diff >= 0 else "#f472b6"
     
+    st.markdown(f"""
+    <p style='font-size: 1.1rem; color: #cbd5e1;'>
+        If you bought one share {history_years} year{'s' if history_years > 1 else ''} ago, it would have cost you <b>${start_price:.2f}</b>. <br>
+        Today, that same share is worth <b>${current_price:.2f}</b>. The price has <span style='color: {color}; font-weight: bold;'>{direction} by {abs(pct_change):.1f}%</span>.
+    </p>
+    """, unsafe_allow_html=True)
+    
+    # Compact, beginner-friendly chart
     fig = go.Figure()
-    
-    if "Simple Line" in view_mode:
-        fig.add_trace(go.Scatter(
-            x=df['Date'], y=df['Close'], 
-            mode='lines', 
-            line=dict(color='#22d3ee', width=4), 
-            name='Price',
-            fill='tozeroy',
-            fillcolor='rgba(34, 211, 238, 0.1)'
-        ))
-        # Hide complex axes for beginners
-        fig.update_layout(xaxis=dict(showgrid=False, showticklabels=True), yaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.05)'))
-    else:
-        fig.add_trace(go.Candlestick(
-            x=df['Date'], open=df['Open'], high=df['High'], low=df['Low'], close=df['Close'], 
-            name='Price',
-            increasing_line_color='#4ade80', decreasing_line_color='#f472b6'
-        ))
-        st.info("💡 **Candlestick Tip:** A green block means the price went up that day. A pink block means it went down. The thin lines sticking out (wicks) show the highest and lowest points the price reached during that day.")
+    fig.add_trace(go.Scatter(
+        x=df_view['Date'], y=df_view['Close'], 
+        mode='lines', 
+        line=dict(color='#22d3ee', width=3), 
+        name='Price',
+        fill='tozeroy',
+        fillcolor='rgba(34, 211, 238, 0.08)'
+    ))
 
     fig.update_layout(
         template="plotly_dark",
         paper_bgcolor='rgba(0,0,0,0)', 
         plot_bgcolor='rgba(0,0,0,0)',
-        height=400, # Compact height so it isn't overwhelming
-        margin=dict(l=0, r=0, t=20, b=0),
-        hovermode="x unified"
+        height=350, # Compact height
+        margin=dict(l=0, r=0, t=10, b=0),
+        hovermode="x unified",
+        xaxis=dict(showgrid=False, showticklabels=True), 
+        yaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.05)', tickprefix="$")
     )
     st.plotly_chart(fig, use_container_width=True)
-    st.markdown("<div class='data-credit'>Verified Market Data provided by: Yahoo Finance API</div>", unsafe_allow_html=True)
+    st.markdown("<div class='data-credit'>Verified Market Data provided by: Yahoo Finance</div>", unsafe_allow_html=True)
 
 # ------------------------------------------
-# TAB 3: TRANSPARENT AI EXPLANATION
+# TAB 3: INSIGHT (Educational Recommendation)
 # ------------------------------------------
 with tab3:
-    st.markdown(f"<h3 style='color: #f8fafc;'>How is {ticker_input} doing right now?</h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color: #f8fafc;'>Educational Market Insight for {company_name}</h3>", unsafe_allow_html=True)
+    st.write("We use simple math to figure out the 'trend' (direction) of a stock so you can make informed decisions.")
     
-    status = "Growing smoothly! 📈" if is_healthy else "Taking a breather 📉"
-    color = "#4ade80" if is_healthy else "#f472b6"
-    trend_word = "higher" if is_healthy else "lower"
-    action_word = "more people are buying than selling" if is_healthy else "some people are taking a break and selling their slices"
+    # Calculate simple moving averages using the full 5-year dataset to ensure we have enough data
+    df_full['50_Day_Avg'] = df_full['Close'].rolling(window=50).mean()
+    df_full['200_Day_Avg'] = df_full['Close'].rolling(window=200).mean()
     
+    # Get the latest values
+    latest_50 = float(df_full['50_Day_Avg'].iloc[-1]) if not pd.isna(df_full['50_Day_Avg'].iloc[-1]) else current_price
+    latest_200 = float(df_full['200_Day_Avg'].iloc[-1]) if not pd.isna(df_full['200_Day_Avg'].iloc[-1]) else current_price
+    
+    # Simple Logic Gate for Recommendation
+    if current_price > latest_50 and latest_50 > latest_200:
+        recommendation = "BUY 🟢"
+        rec_color = "#4ade80"
+        rec_desc = "The stock is in a strong upward trend. People are consistently buying it."
+    elif current_price < latest_50 and latest_50 < latest_200:
+        recommendation = "SELL / WAIT 🔴"
+        rec_color = "#f472b6"
+        rec_desc = "The stock is in a downward trend. It might be best to wait until it recovers."
+    else:
+        recommendation = "HOLD / CAUTIOUS 🟡"
+        rec_color = "#fbbf24"
+        rec_desc = "The stock is moving sideways or recovering from a drop. It's in a 'wait and see' phase."
+
     st.markdown(f"""
-    <div class="glass-card">
-        <h2 style='color: {color}; margin-top:0;'>Current Vibe: {status}</h2>
-        <p style='font-size: 1.2rem; color: #cbd5e1;'>The current price of one share (slice) is <b>${current_price:.2f}</b>.</p>
+    <div class="glass-card" style="border-top: 4px solid {rec_color};">
+        <h2 style='color: {rec_color}; margin-top:0; font-size: 2.5rem; text-align: center;'>{recommendation}</h2>
+        <p style='font-size: 1.2rem; color: #f8fafc; text-align: center;'>{rec_desc}</p>
         
-        <div class="ai-insight">
-            <h4 style='color: #c084fc; margin-top:0; display: flex; align-items: center; gap: 8px;'>
-                🧠 Transparent AI Insight
+        <div class="reasoning-box">
+            <h4 style='color: #22d3ee; margin-top:0; display: flex; align-items: center; gap: 8px;'>
+                🔍 How we got this result (Step-by-Step):
             </h4>
-            <p style='margin-bottom: 10px; color: #e2e8f0;'>I don't use magic or confusing math. Here is exactly how I looked at {ticker_input} today, step-by-step:</p>
+            <p style='margin-bottom: 10px; color: #e2e8f0;'>To avoid guessing, investors use "Averages" to smooth out the daily roller coaster. Here is the math we ran on {ticker_input}:</p>
             <ul style='margin-bottom: 0; color: #e2e8f0; line-height: 1.8;'>
-                <li><b>Step 1:</b> I looked at what the price was 90 days ago, which was <b>${start_price:.2f}</b>.</li>
-                <li><b>Step 2:</b> I compared that past price to today's current price of <b>${current_price:.2f}</b>.</li>
-                <li><b>Step 3:</b> Because today's price is {trend_word} than it was 3 months ago, the general trend tells us that {action_word}.</li>
+                <li><b>Step 1:</b> We calculated the average price over the last 50 days (<b>${latest_50:.2f}</b>). This shows the short-term mood.</li>
+                <li><b>Step 2:</b> We calculated the average price over the last 200 days (<b>${latest_200:.2f}</b>). This shows the long-term health.</li>
+                <li><b>Step 3:</b> Because the current price (${current_price:.2f}) is <b>{'higher' if current_price > latest_50 else 'lower'}</b> than the 50-day average, and the 50-day average is <b>{'higher' if latest_50 > latest_200 else 'lower'}</b> than the 200-day average, the mathematical trend points to: <b>{recommendation.split()[0]}</b>.</li>
             </ul>
         </div>
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("<div class='data-credit'>Calculations processed safely and locally based on Yahoo Finance historical pricing.</div>", unsafe_allow_html=True)
+    st.markdown("<div class='data-credit'>Calculations processed locally based on historical pricing. Intended for educational purposes, not financial advice.</div>", unsafe_allow_html=True)

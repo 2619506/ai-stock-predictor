@@ -69,36 +69,44 @@ st.markdown("""
     .stTabs [aria-selected="true"] {
         background-color: rgba(56, 189, 248, 0.1); color: #38bdf8 !important; border-bottom: 2px solid #38bdf8;
     }
+
+    /* Expander Styling for About Section */
+    .streamlit-expanderHeader {
+        background-color: rgba(255, 255, 255, 0.02) !important;
+        border-radius: 8px !important;
+        color: #38bdf8 !important;
+        font-weight: 600 !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# Main Header
+# Main App Title Header
 st.markdown("""
 <div style='display: flex; align-items: center; gap: 10px; margin-bottom: 5px;'>
     <h1 style='color: #38bdf8; margin: 0;'>✦ NeonVest</h1>
     <h3 style='color: #94a3b8; font-weight: normal; margin: 0; padding-top: 8px;'>| Market Intelligence</h3>
 </div>
-<p style='color: #64748b; font-size: 1.1rem; margin-bottom: 20px;'>A mature, simplified approach to understanding global equities.</p>
+<p style='color: #64748b; font-size: 1.1rem; margin-bottom: 15px;'>A mature, simplified approach to understanding global equities.</p>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. SYSTEM ARCHITECTURE & PURPOSE SUMMARY
+# 2. ABOUT THE PROJECT (AI/ML Overview)
 # ==========================================
-with st.expander("ℹ️ About this Platform: AI Architecture & Design Motivation", expanded=False):
+with st.expander("ℹ️ About This Project: Purpose & AI Architecture", expanded=False):
     st.markdown("""
-    <div style="line-height: 1.7; color: #cbd5e1; font-size: 0.98rem;">
+    <div style="line-height: 1.7; color: #cbd5e1; font-size: 0.98rem; padding: 10px;">
         <h4 style="color: #38bdf8; margin-top: 0;">✦ Platform Overview</h4>
-        <p><b>NeonVest</b> is an educational market intelligence platform engineered to bridge the gap between complex quantitative analysis and beginner financial literacy.</p>
+        <p><b>NeonVest</b> is an educational market intelligence platform engineered to bridge the gap between quantitative financial analysis and beginner investor literacy. It translates complex market telemetry into simple, accessible, and actionable concepts.</p>
         
-        <h4 style="color: #38bdf8; margin-top: 15px;">💡 Motivation</h4>
-        <p>Traditional financial interfaces either overwhelm newcomers with raw technical indicators or obscure their logic behind opaque, "black-box" predictive claims. NeonVest was built to prioritize <b>Explainable Intelligence</b>—translating real-time telemetry into transparent, rule-based insights that build user trust.</p>
+        <h4 style="color: #38bdf8; margin-top: 15px;">💡 Motivation & Design Philosophy</h4>
+        <p>Traditional financial tools often confuse beginners with dense technical charts or alienate them with opaque "black-box" predictive claims. NeonVest was built around the principle of <b>Explainable Intelligence</b>—ensuring that every insight is backed by clear, step-by-step mathematical reasoning that builds user trust.</p>
         
-        <h4 style="color: #38bdf8; margin-top: 15px;">🧠 AI, Machine Learning & Quantitative Architecture</h4>
-        <ul style="padding-left: 20px; color: #cbd5e1;">
-            <li><b>Quantitative Signal Processing & Feature Engineering:</b> The system ingests multi-year historical time-series data, engineering moving-window features (such as 50-day and 200-day Simple Moving Averages) to calculate directional trend vectors and price momentum.</li>
-            <li><b>Explainable Decision Logic (XAI Philosophy):</b> Rather than deploying uninterpretable deep neural networks for price forecasting, the platform utilizes deterministic decision-tree logic. This provides verifiable step-by-step mathematical reasoning for every signal (Accumulate, Hold, Avoid).</li>
-            <li><b>Data Governance & Pipeline Resilience:</b> Built on a cached ETL (Extract, Transform, Load) pipeline, the system dynamically cleans missing entries, filters anomalies (e.g., null values during market transitions), and formats unstructured corporate metadata in real-time.</li>
-            <li><b>Unstructured Context Aggregation:</b> The platform parses live financial news feeds and analyst consensus target distributions to ground quantitative calculations in broader qualitative market sentiment.</li>
+        <h4 style="color: #38bdf8; margin-top: 15px;">🧠 Applied AI, Machine Learning & Quantitative Prospect</h4>
+        <ul style="padding-left: 20px; color: #cbd5e1; line-height: 1.8;">
+            <li><b>Quantitative Feature Engineering:</b> The backend executes rolling-window transformations over multi-year historical time-series datasets (such as 50-day and 200-day Simple Moving Averages) to extract underlying momentum indicators and reduce market noise.</li>
+            <li><b>Explainable AI (XAI Philosophy):</b> Rather than deploying uninterpretable neural networks that offer no reasoning, the engine uses deterministic logic structures to generate clear directional signals (<i>Accumulate, Hold, Avoid</i>) paired with verifiable mathematical breakdowns.</li>
+            <li><b>Resilient ETL Data Pipeline:</b> Built on an automated caching pipeline that handles real-time market data retrieval, cleans missing entries, normalizes timestamps, and dynamically handles API payload variations.</li>
+            <li><b>Unstructured Context Synthesis:</b> Integrates live financial news streams and Wall Street analyst price target distributions to ground raw calculations in real-world business context.</li>
         </ul>
     </div>
     """, unsafe_allow_html=True)
@@ -128,14 +136,14 @@ def fetch_company_data(ticker, years):
         stock = yf.Ticker(ticker)
         df_full = stock.history(period="5y") 
         
-        # Drop any rows where closing price is missing
+        # Clean missing values in dataset
         df_full = df_full.dropna(subset=['Close'])
         
         if df_full.empty: return None, None, None, None
             
         df_full.reset_index(inplace=True)
         info = stock.info
-        news = stock.news[:5] # Fetch top 5, we will filter for the best 3
+        news = stock.news[:5] if stock.news else []
         
         cutoff_date = pd.Timestamp.now(tz=df_full['Date'].dt.tz) - pd.DateOffset(years=years)
         df_view = df_full[df_full['Date'] >= cutoff_date].copy()
@@ -189,18 +197,16 @@ with tab1:
     </div>
     """, unsafe_allow_html=True)
     
-    # Robust News Section Parsing (Bug Fixed)
+    # Robust News Parsing
     st.markdown("<h3 style='color: #f1f5f9; margin-top: 30px;'>📰 Real-Time Market News</h3>", unsafe_allow_html=True)
     valid_news_count = 0
     if news:
         for item in news:
-            # Safely extract basic info as fallback defaults
             title = item.get('title')
             publisher = item.get('publisher', 'Financial Press')
             link = item.get('link', '#')
             pub_time = item.get('providerPublishTime', 0)
             
-            # Safely override with nested 'content' fields if they actually exist and are dictionaries
             content = item.get('content')
             if isinstance(content, dict):
                 title = content.get('title', title)
@@ -215,9 +221,8 @@ with tab1:
                     link = click_url.get('url', link)
             
             if not title:
-                continue # Skip items with no titles
+                continue
                 
-            # Date Parsing Fallback
             try:
                 if isinstance(pub_time, str):
                     date_str = pd.to_datetime(pub_time).strftime('%B %d, %Y')
@@ -237,7 +242,7 @@ with tab1:
             """, unsafe_allow_html=True)
             
             if valid_news_count >= 3:
-                break # Limit to top 3 valid news stories
+                break
                 
     if valid_news_count == 0:
         st.write("No recent news articles found for this asset.")

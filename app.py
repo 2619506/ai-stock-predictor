@@ -30,7 +30,8 @@ st.write("Quantitative Data Aggregation, Technical Visualization, and Algorithmi
 # 2. DYNAMIC SIDEBAR CONFIGURATION
 # ==========================================
 st.sidebar.header("Equities Control Panel")
-search_ticker = st.sidebar.text_input("Target Ticker (e.g., AAPL, TSLA, NVDA):", "NVDA").upper()
+# Added .strip() to prevent errors if the user accidentally types a space
+search_ticker = st.sidebar.text_input("Target Ticker (e.g., AAPL, TSLA, TSCO.L, BTC-USD):", "NVDA").upper().strip()
 historical_years = st.sidebar.slider("Historical Lookback (Years):", 1, 5, 2)
 prediction_days = st.sidebar.slider("Algorithmic Projection Window (Days):", 10, 365, 90)
 
@@ -54,7 +55,7 @@ def fetch_news(ticker):
 
 @st.cache_data(ttl=86400) # Cache daily to prevent heavy API pulling
 def get_market_screener():
-    # 100 high-volume market tickers representing a broad market subset
+    # 100 high-volume market tickers representing a broad market subset for the Screener Tab
     tickers_list = [
         "AAPL", "MSFT", "NVDA", "AMZN", "META", "GOOGL", "TSLA", "LLY", "AVGO", "V", 
         "JPM", "UNH", "WMT", "JNJ", "XOM", "MA", "PG", "COST", "HD", "ORCL", 
@@ -87,10 +88,19 @@ def get_market_screener():
 with st.spinner("Synchronizing with Market Matrices..."):
     df = load_data(search_ticker, historical_years)
 
+# UPDATED ERROR HANDLING: Guides the user on how to search for international/crypto assets
 if df.empty or 'Close' not in df.columns:
-    st.error(f"No equity data found for '{search_ticker}'. Please verify the ticker symbol.")
+    st.error(f"No equity data found for '{search_ticker}'.")
+    st.info("""
+    **💡 Search Tips for Global Assets:**
+    *   **UK Stocks:** Add `.L` (e.g., `TSCO.L` for Tesco, `BP.L` for BP)
+    *   **Indian Stocks:** Add `.NS` (e.g., `RELIANCE.NS`, `TCS.NS`)
+    *   **European Stocks:** Add `.PA` (Paris) or `.DE` (Germany)
+    *   **Crypto:** Add `-USD` (e.g., `BTC-USD`, `ETH-USD`)
+    *   Verify the exact Yahoo Finance ticker symbol if the issue persists.
+    """)
     st.stop()
-
+    
 # Technical Indicator Calculations
 df['SMA_50'] = df['Close'].rolling(window=50).mean()
 df['SMA_200'] = df['Close'].rolling(window=200).mean()

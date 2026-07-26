@@ -164,21 +164,35 @@ with tab1:
     </div>
     """, unsafe_allow_html=True)
     
-    # Robust News Section Parsing
+    # Robust News Section Parsing (Bug Fixed)
     st.markdown("<h3 style='color: #f1f5f9; margin-top: 30px;'>📰 Real-Time Market News</h3>", unsafe_allow_html=True)
     valid_news_count = 0
     if news:
         for item in news:
-            # Handle Yahoo Finance's varying dictionary structures safely
-            title = item.get('content', {}).get('title') or item.get('title')
-            publisher = item.get('content', {}).get('provider', {}).get('displayName') or item.get('publisher', 'Financial Press')
-            link = item.get('content', {}).get('clickThroughUrl', {}).get('url') or item.get('link', '#')
+            # Safely extract basic info as fallback defaults
+            title = item.get('title')
+            publisher = item.get('publisher', 'Financial Press')
+            link = item.get('link', '#')
+            pub_time = item.get('providerPublishTime', 0)
             
-            pub_time = item.get('content', {}).get('pubDate') or item.get('providerPublishTime', 0)
+            # Safely override with nested 'content' fields if they actually exist and are dictionaries
+            content = item.get('content')
+            if isinstance(content, dict):
+                title = content.get('title', title)
+                pub_time = content.get('pubDate', pub_time)
+                
+                provider = content.get('provider')
+                if isinstance(provider, dict):
+                    publisher = provider.get('displayName', publisher)
+                    
+                click_url = content.get('clickThroughUrl')
+                if isinstance(click_url, dict):
+                    link = click_url.get('url', link)
             
             if not title:
-                continue # Skip items with no title
+                continue # Skip items with no titles
                 
+            # Date Parsing Fallback
             try:
                 if isinstance(pub_time, str):
                     date_str = pd.to_datetime(pub_time).strftime('%B %d, %Y')
@@ -186,7 +200,7 @@ with tab1:
                     date_str = datetime.fromtimestamp(pub_time).strftime('%B %d, %Y')
                 else:
                     date_str = "Recent"
-            except:
+            except Exception:
                 date_str = "Recent"
             
             valid_news_count += 1
@@ -215,7 +229,7 @@ with tab1:
     """, unsafe_allow_html=True)
 
 # ------------------------------------------
-# TAB 2: HISTORY (Bug-Free)
+# TAB 2: HISTORY
 # ------------------------------------------
 with tab2:
     st.markdown(f"<h3 style='color: #f8fafc;'>Historical Trajectory ({history_years} Year{'s' if history_years > 1 else ''})</h3>", unsafe_allow_html=True)
@@ -249,7 +263,7 @@ with tab2:
     st.markdown("<div class='data-credit'>Market Data reliably sourced via Yahoo Finance API</div>", unsafe_allow_html=True)
 
 # ------------------------------------------
-# TAB 3: INSIGHT (Pure HTML Fix)
+# TAB 3: INSIGHT
 # ------------------------------------------
 with tab3:
     st.markdown(f"<h3 style='color: #f8fafc;'>Analytical Outlook for {company_name}</h3>", unsafe_allow_html=True)

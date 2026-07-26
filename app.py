@@ -7,7 +7,7 @@ from datetime import datetime
 # ==========================================
 # 1. INITIALIZATION & MATURE NEON STYLING
 # ==========================================
-st.set_page_config(page_title="NeonVest | Market Intelligence", page_icon="✦", layout="wide")
+st.set_page_config(page_title="SmarVest | Market Intelligence", page_icon="✦", layout="wide")
 
 st.markdown("""
     <style>
@@ -70,7 +70,7 @@ st.markdown("""
         background-color: rgba(56, 189, 248, 0.1); color: #38bdf8 !important; border-bottom: 2px solid #38bdf8;
     }
 
-    /* Expander Styling for About Section */
+    /* Expander Header Styling */
     .streamlit-expanderHeader {
         background-color: rgba(255, 255, 255, 0.02) !important;
         border-radius: 8px !important;
@@ -83,33 +83,29 @@ st.markdown("""
 # Main App Title Header
 st.markdown("""
 <div style='display: flex; align-items: center; gap: 10px; margin-bottom: 5px;'>
-    <h1 style='color: #38bdf8; margin: 0;'>✦ NeonVest</h1>
+    <h1 style='color: #38bdf8; margin: 0;'>✦ SmarVest</h1>
     <h3 style='color: #94a3b8; font-weight: normal; margin: 0; padding-top: 8px;'>| Market Intelligence</h3>
 </div>
 <p style='color: #64748b; font-size: 1.1rem; margin-bottom: 15px;'>A mature, simplified approach to understanding global equities.</p>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. ABOUT THE PROJECT (AI/ML Overview)
+# 2. ABOUT THE PROJECT (Fixed HTML Formatting)
 # ==========================================
 with st.expander("ℹ️ About This Project: Purpose & AI Architecture", expanded=False):
-    st.markdown("""
-    <div style="line-height: 1.7; color: #cbd5e1; font-size: 0.98rem; padding: 10px;">
-        <h4 style="color: #38bdf8; margin-top: 0;">✦ Platform Overview</h4>
-        <p><b>NeonVest</b> is an educational market intelligence platform engineered to bridge the gap between quantitative financial analysis and beginner investor literacy. It translates complex market telemetry into simple, accessible, and actionable concepts.</p>
-        
-        <h4 style="color: #38bdf8; margin-top: 15px;">💡 Motivation & Design Philosophy</h4>
-        <p>Traditional financial tools often confuse beginners with dense technical charts or alienate them with opaque "black-box" predictive claims. NeonVest was built around the principle of <b>Explainable Intelligence</b>—ensuring that every insight is backed by clear, step-by-step mathematical reasoning that builds user trust.</p>
-        
-        <h4 style="color: #38bdf8; margin-top: 15px;">🧠 Applied AI, Machine Learning & Quantitative Prospect</h4>
-        <ul style="padding-left: 20px; color: #cbd5e1; line-height: 1.8;">
-            <li><b>Quantitative Feature Engineering:</b> The backend executes rolling-window transformations over multi-year historical time-series datasets (such as 50-day and 200-day Simple Moving Averages) to extract underlying momentum indicators and reduce market noise.</li>
-            <li><b>Explainable AI (XAI Philosophy):</b> Rather than deploying uninterpretable neural networks that offer no reasoning, the engine uses deterministic logic structures to generate clear directional signals (<i>Accumulate, Hold, Avoid</i>) paired with verifiable mathematical breakdowns.</li>
-            <li><b>Resilient ETL Data Pipeline:</b> Built on an automated caching pipeline that handles real-time market data retrieval, cleans missing entries, normalizes timestamps, and dynamically handles API payload variations.</li>
-            <li><b>Unstructured Context Synthesis:</b> Integrates live financial news streams and Wall Street analyst price target distributions to ground raw calculations in real-world business context.</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("""<div style="line-height: 1.7; color: #cbd5e1; font-size: 0.98rem; padding: 10px;">
+<h4 style="color: #38bdf8; margin-top: 0;">✦ Platform Overview</h4>
+<p><b>SmarVest</b> is an educational market intelligence platform engineered to bridge the gap between quantitative financial analysis and beginner investor literacy. It translates complex market telemetry into simple, accessible, and actionable concepts.</p>
+<h4 style="color: #38bdf8; margin-top: 15px;">💡 Motivation & Design Philosophy</h4>
+<p>Traditional financial tools often confuse beginners with dense technical charts or alienate them with opaque "black-box" predictive claims. SmarVest was built around the principle of <b>Explainable Intelligence</b>—ensuring that every insight is backed by clear, step-by-step mathematical reasoning that builds user trust.</p>
+<h4 style="color: #38bdf8; margin-top: 15px;">🧠 Applied AI, Machine Learning & Quantitative Prospect</h4>
+<ul style="padding-left: 20px; color: #cbd5e1; line-height: 1.8;">
+<li><b>Quantitative Feature Engineering:</b> The backend executes rolling-window transformations over multi-year historical time-series datasets (such as 50-day and 200-day Simple Moving Averages) to extract underlying momentum indicators and reduce market noise.</li>
+<li><b>Explainable AI (XAI Philosophy):</b> Rather than deploying uninterpretable neural networks that offer no reasoning, the engine uses deterministic logic structures to generate clear directional signals (<i>Accumulate, Hold, Avoid</i>) paired with verifiable mathematical breakdowns.</li>
+<li><b>Resilient ETL Data Pipeline:</b> Built on an automated caching pipeline that handles real-time market data retrieval, cleans missing entries, normalizes timestamps, and dynamically handles API payload variations.</li>
+<li><b>Unstructured Context Synthesis:</b> Integrates live financial news streams and Wall Street analyst price target distributions to ground raw calculations in real-world business context.</li>
+</ul>
+</div>""", unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -177,25 +173,23 @@ with tab1:
     mcap = format_large_number(info.get('marketCap'))
     target_price = info.get('targetMeanPrice', 'N/A')
     
-    st.markdown(f"""
-    <div class="glass-card">
-        <h3 style='margin-top:0; color: #f1f5f9;'>The Core Concept: What is Equity?</h3>
-        <p style='font-size: 1.05rem; line-height: 1.7; color: #cbd5e1;'>
-            When you purchase a <span class="hover-tooltip">Stock<span class="tooltiptext">Also known as 'equity' or 'shares'. It represents a fraction of ownership in a corporation.</span></span>, you are not just buying a ticker on a screen—you are acquiring actual fractional ownership in a living, breathing business. 
-            If the company innovates, increases revenue, and expands, the underlying value of the business grows, making your fraction more valuable. 
-        </p>
-    </div>
-    <div class="glass-card">
-        <h3 style='margin-top:0; color: #38bdf8;'>Corporate Profile: {company_name}</h3>
-        <p style='color: #94a3b8; font-size: 0.95rem;'><b>Sector:</b> {sector} &nbsp;|&nbsp; <b>Market Valuation:</b> {mcap}</p>
-        <p style='font-size: 1.05rem; line-height: 1.7; color: #cbd5e1;'>{summary}</p>
-        <h4 style='color: #f1f5f9; margin-top: 20px;'>Future Outlook & Analyst Consensus</h4>
-        <p style='font-size: 1.05rem; color: #cbd5e1;'>
-            While the current price is <b>${current_price:.2f}</b>, Wall Street analysts have a consensus future price target of <b>${target_price if target_price != 'N/A' else 'Unavailable'}</b> for the coming year. 
-            <i>(Note: Analyst targets are estimates, not guarantees.)</i>
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f"""<div class="glass-card">
+<h3 style='margin-top:0; color: #f1f5f9;'>The Core Concept: What is Equity?</h3>
+<p style='font-size: 1.05rem; line-height: 1.7; color: #cbd5e1;'>
+When you purchase a <span class="hover-tooltip">Stock<span class="tooltiptext">Also known as 'equity' or 'shares'. It represents a fraction of ownership in a corporation.</span></span>, you are not just buying a ticker on a screen—you are acquiring actual fractional ownership in a living, breathing business. 
+If the company innovates, increases revenue, and expands, the underlying value of the business grows, making your fraction more valuable. 
+</p>
+</div>
+<div class="glass-card">
+<h3 style='margin-top:0; color: #38bdf8;'>Corporate Profile: {company_name}</h3>
+<p style='color: #94a3b8; font-size: 0.95rem;'><b>Sector:</b> {sector} &nbsp;|&nbsp; <b>Market Valuation:</b> {mcap}</p>
+<p style='font-size: 1.05rem; line-height: 1.7; color: #cbd5e1;'>{summary}</p>
+<h4 style='color: #f1f5f9; margin-top: 20px;'>Future Outlook & Analyst Consensus</h4>
+<p style='font-size: 1.05rem; color: #cbd5e1;'>
+While the current price is <b>${current_price:.2f}</b>, Wall Street analysts have a consensus future price target of <b>${target_price if target_price != 'N/A' else 'Unavailable'}</b> for the coming year. 
+<i>(Note: Analyst targets are estimates, not guarantees.)</i>
+</p>
+</div>""", unsafe_allow_html=True)
     
     # Robust News Parsing
     st.markdown("<h3 style='color: #f1f5f9; margin-top: 30px;'>📰 Real-Time Market News</h3>", unsafe_allow_html=True)
@@ -234,12 +228,10 @@ with tab1:
                 date_str = "Recent"
             
             valid_news_count += 1
-            st.markdown(f"""
-            <div style='background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border-left: 2px solid #38bdf8; margin-bottom: 10px;'>
-                <a href="{link}" target="_blank" class="news-link">{title}</a>
-                <div style='color: #64748b; font-size: 0.85rem; margin-top: 5px;'>{publisher} • {date_str}</div>
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown(f"""<div style='background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border-left: 2px solid #38bdf8; margin-bottom: 10px;'>
+<a href="{link}" target="_blank" class="news-link">{title}</a>
+<div style='color: #64748b; font-size: 0.85rem; margin-top: 5px;'>{publisher} • {date_str}</div>
+</div>""", unsafe_allow_html=True)
             
             if valid_news_count >= 3:
                 break
@@ -247,16 +239,14 @@ with tab1:
     if valid_news_count == 0:
         st.write("No recent news articles found for this asset.")
 
-    st.markdown("""
-    <div class="glass-card" style="margin-top: 30px;">
-        <h3 style='margin-top:0; color: #f1f5f9;'>Market Vocabulary</h3>
-        <ul style='color: #cbd5e1; line-height: 2;'>
-            <li><span class="hover-tooltip">Market Capitalization<span class="tooltiptext">The total dollar market value of a company's outstanding shares. Calculated by multiplying the stock price by total shares.</span></span>: The total size and value of the company.</li>
-            <li><span class="hover-tooltip">Dividend Yield<span class="tooltiptext">A financial ratio that shows how much a company pays out in dividends each year relative to its stock price.</span></span>: A percentage of profits distributed back to the shareholders as cash.</li>
-            <li><span class="hover-tooltip">Bull vs. Bear Market<span class="tooltiptext">Bull = Rising prices and optimism. Bear = Falling prices (usually 20% or more) and pessimism.</span></span>: Terms used to describe the overall trend of the market (Optimistic vs. Pessimistic).</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("""<div class="glass-card" style="margin-top: 30px;">
+<h3 style='margin-top:0; color: #f1f5f9;'>Market Vocabulary</h3>
+<ul style='color: #cbd5e1; line-height: 2;'>
+<li><span class="hover-tooltip">Market Capitalization<span class="tooltiptext">The total dollar market value of a company's outstanding shares. Calculated by multiplying the stock price by total shares.</span></span>: The total size and value of the company.</li>
+<li><span class="hover-tooltip">Dividend Yield<span class="tooltiptext">A financial ratio that shows how much a company pays out in dividends each year relative to its stock price.</span></span>: A percentage of profits distributed back to the shareholders as cash.</li>
+<li><span class="hover-tooltip">Bull vs. Bear Market<span class="tooltiptext">Bull = Rising prices and optimism. Bear = Falling prices (usually 20% or more) and pessimism.</span></span>: Terms used to describe the overall trend of the market (Optimistic vs. Pessimistic).</li>
+</ul>
+</div>""", unsafe_allow_html=True)
 
 # ------------------------------------------
 # TAB 2: HISTORY
@@ -318,20 +308,18 @@ with tab3:
         rec_color = "#fbbf24"
         rec_desc = "The asset is consolidating or recovering. A clear directional trend has not yet established."
 
-    st.markdown(f"""
-    <div class="glass-card" style="border-top: 4px solid {rec_color};">
-        <h2 style='color: {rec_color}; margin-top:0; font-size: 2.2rem; text-align: center; letter-spacing: 1px;'>{recommendation}</h2>
-        <p style='font-size: 1.1rem; color: #f8fafc; text-align: center; margin-bottom: 25px;'>{rec_desc}</p>
-        <div class="reasoning-box">
-            <h4 style='color: #38bdf8; margin-top:0; display: flex; align-items: center; gap: 8px;'>⟡ Analytical Breakdown</h4>
-            <p style='margin-bottom: 15px; color: #e2e8f0;'>By tracking historical moving averages, we can map the current market sentiment mathematically, avoiding emotional decisions:</p>
-            <ul style='margin-bottom: 0; color: #e2e8f0; line-height: 1.8;'>
-                <li><b>Step 1:</b> The 50-day average is <b>${latest_50:.2f}</b>. This line represents the short-term mood of the market.</li>
-                <li><b>Step 2:</b> The 200-day average is <b>${latest_200:.2f}</b>. This line represents the long-term, foundational health of the asset.</li>
-                <li><b>Step 3:</b> Because the current price (<b>${current_price:.2f}</b>) is <b>{'higher' if current_price > latest_50 else 'lower'}</b> than the 50-day average, and the 50-day average is <b>{'higher' if latest_50 > latest_200 else 'lower'}</b> than the 200-day average, the mathematical logic points strictly to: <b>{recommendation.split(' / ')[0]}</b>.</li>
-            </ul>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f"""<div class="glass-card" style="border-top: 4px solid {rec_color};">
+<h2 style='color: {rec_color}; margin-top:0; font-size: 2.2rem; text-align: center; letter-spacing: 1px;'>{recommendation}</h2>
+<p style='font-size: 1.1rem; color: #f8fafc; text-align: center; margin-bottom: 25px;'>{rec_desc}</p>
+<div class="reasoning-box">
+<h4 style='color: #38bdf8; margin-top:0; display: flex; align-items: center; gap: 8px;'>⟡ Analytical Breakdown</h4>
+<p style='margin-bottom: 15px; color: #e2e8f0;'>By tracking historical moving averages, we can map the current market sentiment mathematically, avoiding emotional decisions:</p>
+<ul style='margin-bottom: 0; color: #e2e8f0; line-height: 1.8;'>
+<li><b>Step 1:</b> The 50-day average is <b>${latest_50:.2f}</b>. This line represents the short-term mood of the market.</li>
+<li><b>Step 2:</b> The 200-day average is <b>${latest_200:.2f}</b>. This line represents the long-term, foundational health of the asset.</li>
+<li><b>Step 3:</b> Because the current price (<b>${current_price:.2f}</b>) is <b>{'higher' if current_price > latest_50 else 'lower'}</b> than the 50-day average, and the 50-day average is <b>{'higher' if latest_50 > latest_200 else 'lower'}</b> than the 200-day average, the mathematical logic points strictly to: <b>{recommendation.split(' / ')[0]}</b>.</li>
+</ul>
+</div>
+</div>""", unsafe_allow_html=True)
     
     st.markdown("<div class='data-credit'>Calculations processed locally based on standard quantitative metrics. Educational purposes only.</div>", unsafe_allow_html=True)

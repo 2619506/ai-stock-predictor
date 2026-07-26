@@ -392,8 +392,8 @@ with tab4:
         <div class='ai-explain'>
         <b>The Mathematics of Market Behavior (XAI):</b><br>
         The AI generates this Nexus by computing the Pearson Correlation Coefficient over the trailing 12 months using: 
-        $$r = \\frac{\\sum(x_i-\\bar{x})(y_i-\\bar{y})}{\\sqrt{\\sum(x_i-\\bar{x})^2 \\sum(y_i-\\bar{y})^2}}$$
-        <br>
+        $$r = \\frac{{\\sum(x_i-\\bar{{x}})(y_i-\\bar{{y}})}}{{\\sqrt{{\\sum(x_i-\\bar{{x}})^2 \\sum(y_i-\\bar{{y}})^2}}}}$$
+        <br><br>
         <b>Analysis:</b> If your target asset has a high correlation to Bitcoin (> 0.50), it trades highly on speculative risk rather than traditional fundamentals. If it has a negative correlation to the S&P 500 (< -0.50), the algorithm identifies it as a hedging asset that moves opposite to the broader economy.
         </div>
         """, unsafe_allow_html=True)

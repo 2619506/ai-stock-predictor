@@ -13,14 +13,84 @@ from sklearn.pipeline import make_pipeline
 # ==========================================
 st.set_page_config(page_title="Algorithmic Equity Intelligence", page_icon="📈", layout="wide")
 
+# Injecting the Animated Glassmorphism & Diamonds CSS
 st.markdown("""
     <style>
-    .metric-box { background: rgba(0, 255, 204, 0.05); padding: 15px; border-radius: 8px; border-left: 4px solid #00ffcc; margin-bottom: 20px;}
+    /* 1. Animated Deep Gradient Background */
+    .stApp {
+        background: linear-gradient(-45deg, #090910, #1a1a2e, #16213e, #0f3460);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+    }
+    @keyframes gradientBG {
+        0% {background-position: 0% 50%;}
+        50% {background-position: 100% 50%;}
+        100% {background-position: 0% 50%;}
+    }
+
+    /* 2. Frosted Glass Sidebar */
+    [data-testid="stSidebar"] {
+        background: rgba(20, 20, 30, 0.4) !important;
+        backdrop-filter: blur(15px) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* 3. Transparent Header */
+    [data-testid="stHeader"] {
+        background: transparent !important;
+    }
+
+    /* 4. Main Content Glass Pane */
+    .block-container {
+        background: rgba(15, 15, 25, 0.5);
+        backdrop-filter: blur(12px);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        padding-top: 3rem !important;
+        padding-bottom: 3rem !important;
+        margin-top: 2rem;
+    }
+
+    /* 5. Custom Metric & AI Explain Boxes (Updated for Glass) */
+    .metric-box { background: rgba(0, 255, 204, 0.05); padding: 15px; border-radius: 8px; border-left: 4px solid #00ffcc; margin-bottom: 20px; backdrop-filter: blur(5px);}
     .sentiment-pos { color: #0aff68; font-weight: bold; }
     .sentiment-neg { color: #ff007f; font-weight: bold; }
     .sentiment-neu { color: #cbd5e1; font-weight: bold; }
-    .ai-explain { background: rgba(188, 19, 254, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #bc13fe; font-size: 0.95rem; }
+    .ai-explain { background: rgba(188, 19, 254, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #bc13fe; font-size: 0.95rem; backdrop-filter: blur(5px);}
+
+    /* 6. Floating Diamond Crystals */
+    .diamond {
+        position: fixed;
+        background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.15);
+        box-shadow: inset 0 0 20px rgba(255,255,255,0.05), 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        z-index: -1; /* Keeps them behind the app data */
+        pointer-events: none; /* Stops them from blocking clicks */
+    }
+    .d1 { width: 250px; height: 250px; top: 15%; left: 5%; animation: float1 12s infinite ease-in-out alternate; }
+    .d2 { width: 400px; height: 400px; top: 50%; right: -5%; animation: float2 18s infinite ease-in-out alternate; }
+    .d3 { width: 150px; height: 150px; bottom: 10%; left: 35%; animation: float3 15s infinite ease-in-out alternate; }
+
+    @keyframes float1 {
+        0% { transform: translateY(0px) rotate(45deg); }
+        100% { transform: translateY(-60px) rotate(65deg) scale(1.05); }
+    }
+    @keyframes float2 {
+        0% { transform: translateY(0px) rotate(30deg); }
+        100% { transform: translateY(50px) rotate(15deg) scale(1.1); }
+    }
+    @keyframes float3 {
+        0% { transform: translateY(0px) rotate(60deg); }
+        100% { transform: translateY(-40px) rotate(90deg) scale(0.9); }
+    }
     </style>
+    
+    <!-- Injecting Diamonds into Background -->
+    <div class="diamond d1"></div>
+    <div class="diamond d2"></div>
+    <div class="diamond d3"></div>
 """, unsafe_allow_html=True)
 
 st.title("📈 Algorithmic Equity Intelligence")
@@ -30,8 +100,35 @@ st.write("Quantitative Data Aggregation, Technical Visualization, and Algorithmi
 # 2. DYNAMIC SIDEBAR CONFIGURATION
 # ==========================================
 st.sidebar.header("Equities Control Panel")
-# Added .strip() to prevent errors if the user accidentally types a space
-search_ticker = st.sidebar.text_input("Target Ticker (e.g., AAPL, TSLA, TSCO.L, BTC-USD):", "NVDA").upper().strip()
+
+# Smart Region Selector
+market_region = st.sidebar.selectbox(
+    "Select Market Region:", 
+    ["United States (US)", "India (NSE)", "United Kingdom (LSE)", "Cryptocurrency"]
+)
+
+# Base Ticker Input
+raw_ticker = st.sidebar.text_input("Target Ticker:", "NVDA").upper().strip()
+
+# User Interface Instructions
+st.sidebar.markdown("""
+    <div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px; font-size: 0.85rem; border-left: 3px solid #00bfff;'>
+    <b>🌍 Global Search Tips:</b><br>
+    The system automatically formats tickers for US, India, UK, and Crypto based on your dropdown selection.<br><br>
+    <i>For unlisted regions (e.g., Europe), leave the region as 'US' and manually append the Yahoo Finance suffix (e.g., <code>.PA</code> for Paris, <code>.DE</code> for Germany).</i>
+    </div>
+    <br>
+""", unsafe_allow_html=True)
+
+# Auto-Formatting Logic for Yahoo Finance
+search_ticker = raw_ticker
+if market_region == "India (NSE)" and not raw_ticker.endswith(".NS"):
+    search_ticker = f"{raw_ticker}.NS"
+elif market_region == "United Kingdom (LSE)" and not raw_ticker.endswith(".L"):
+    search_ticker = f"{raw_ticker}.L"
+elif market_region == "Cryptocurrency" and not raw_ticker.endswith("-USD"):
+    search_ticker = f"{raw_ticker}-USD"
+
 historical_years = st.sidebar.slider("Historical Lookback (Years):", 1, 5, 2)
 prediction_days = st.sidebar.slider("Algorithmic Projection Window (Days):", 10, 365, 90)
 
@@ -39,10 +136,31 @@ prediction_days = st.sidebar.slider("Algorithmic Projection Window (Days):", 10,
 def load_data(ticker, years):
     end_date = datetime.today()
     start_date = end_date - timedelta(days=years * 365)
+    
+    # METHOD 1: Try yf.Ticker().history (More reliable on cloud servers)
+    try:
+        stock = yf.Ticker(ticker)
+        df = stock.history(start=start_date, end=end_date)
+        if not df.empty:
+            df.reset_index(inplace=True)
+            # Remove timezone awareness so Plotly charts don't break
+            if df['Date'].dt.tz is not None:
+                df['Date'] = df['Date'].dt.tz_localize(None)
+            return df
+    except:
+        pass # If Method 1 fails, seamlessly move to Method 2
+
+    # METHOD 2: Fallback to yf.download 
     df = yf.download(ticker, start=start_date, end=end_date, progress=False)
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = df.columns.droplevel(1)
-    df.reset_index(inplace=True)
+    if not df.empty:
+        # Handle new yfinance MultiIndex column structures
+        if isinstance(df.columns, pd.MultiIndex):
+            df.columns = df.columns.droplevel(1)
+        df.reset_index(inplace=True)
+        # Remove timezone awareness
+        if 'Date' in df.columns and df['Date'].dt.tz is not None:
+            df['Date'] = df['Date'].dt.tz_localize(None)
+            
     return df
 
 @st.cache_data(ttl=3600)
@@ -55,7 +173,7 @@ def fetch_news(ticker):
 
 @st.cache_data(ttl=86400) # Cache daily to prevent heavy API pulling
 def get_market_screener():
-    # 100 high-volume market tickers representing a broad market subset for the Screener Tab
+    # 100 high-volume market tickers representing a broad market subset
     tickers_list = [
         "AAPL", "MSFT", "NVDA", "AMZN", "META", "GOOGL", "TSLA", "LLY", "AVGO", "V", 
         "JPM", "UNH", "WMT", "JNJ", "XOM", "MA", "PG", "COST", "HD", "ORCL", 
@@ -88,19 +206,16 @@ def get_market_screener():
 with st.spinner("Synchronizing with Market Matrices..."):
     df = load_data(search_ticker, historical_years)
 
-# UPDATED ERROR HANDLING: Guides the user on how to search for international/crypto assets
 if df.empty or 'Close' not in df.columns:
     st.error(f"No equity data found for '{search_ticker}'.")
     st.info("""
     **💡 Search Tips for Global Assets:**
-    *   **UK Stocks:** Add `.L` (e.g., `TSCO.L` for Tesco, `BP.L` for BP)
-    *   **Indian Stocks:** Add `.NS` (e.g., `RELIANCE.NS`, `TCS.NS`)
-    *   **European Stocks:** Add `.PA` (Paris) or `.DE` (Germany)
-    *   **Crypto:** Add `-USD` (e.g., `BTC-USD`, `ETH-USD`)
+    *   Ensure you have selected the correct market region in the sidebar dropdown.
+    *   **European Stocks:** Select 'US' and manually add `.PA` (Paris) or `.DE` (Germany).
     *   Verify the exact Yahoo Finance ticker symbol if the issue persists.
     """)
     st.stop()
-    
+
 # Technical Indicator Calculations
 df['SMA_50'] = df['Close'].rolling(window=50).mean()
 df['SMA_200'] = df['Close'].rolling(window=200).mean()
@@ -148,8 +263,11 @@ with tab1:
     fig.add_trace(go.Scatter(x=df['Date'], y=df['SMA_50'], name='50-Day SMA', line=dict(color='#0aff68', dash='dot')))
     fig.add_trace(go.Scatter(x=df['Date'], y=df['SMA_200'], name='200-Day SMA', line=dict(color='#ff007f', dash='dot')))
     
+    # Make Plotly chart background transparent to fit the glass aesthetic
     fig.update_layout(
         template="plotly_dark",
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
         xaxis_rangeslider_visible=True,
         legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
         height=600
@@ -184,7 +302,12 @@ with tab2:
     fig2.add_trace(go.Scatter(x=df_model['Date'], y=df_model['Trend'], name='Algorithmic Trend', line=dict(color='#bc13fe')))
     fig2.add_trace(go.Scatter(x=future_dates, y=future_preds, name='Forward Forecast', line=dict(color='#0aff68', width=3)))
     
-    fig2.update_layout(template="plotly_dark", height=500)
+    fig2.update_layout(
+        template="plotly_dark",
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        height=500
+    )
     st.plotly_chart(fig2, use_container_width=True)
     
     pred_change = ((future_preds[-1] - current_price) / current_price) * 100

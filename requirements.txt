@@ -5,5 +5,5 @@ requests
 python-dotenv
 google-genai
 streamlit
-yfinance
 scikit-learn
+yfinance>=0.2.40

@@ -72,16 +72,41 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# Main Header
 st.markdown("""
 <div style='display: flex; align-items: center; gap: 10px; margin-bottom: 5px;'>
     <h1 style='color: #38bdf8; margin: 0;'>✦ NeonVest</h1>
     <h3 style='color: #94a3b8; font-weight: normal; margin: 0; padding-top: 8px;'>| Market Intelligence</h3>
 </div>
-<p style='color: #64748b; font-size: 1.1rem; margin-bottom: 30px;'>A mature, simplified approach to understanding global equities.</p>
+<p style='color: #64748b; font-size: 1.1rem; margin-bottom: 20px;'>A mature, simplified approach to understanding global equities.</p>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. DATA PIPELINE & SIDEBAR
+# 2. SYSTEM ARCHITECTURE & PURPOSE SUMMARY
+# ==========================================
+with st.expander("ℹ️ About this Platform: AI Architecture & Design Motivation", expanded=False):
+    st.markdown("""
+    <div style="line-height: 1.7; color: #cbd5e1; font-size: 0.98rem;">
+        <h4 style="color: #38bdf8; margin-top: 0;">✦ Platform Overview</h4>
+        <p><b>NeonVest</b> is an educational market intelligence platform engineered to bridge the gap between complex quantitative analysis and beginner financial literacy.</p>
+        
+        <h4 style="color: #38bdf8; margin-top: 15px;">💡 Motivation</h4>
+        <p>Traditional financial interfaces either overwhelm newcomers with raw technical indicators or obscure their logic behind opaque, "black-box" predictive claims. NeonVest was built to prioritize <b>Explainable Intelligence</b>—translating real-time telemetry into transparent, rule-based insights that build user trust.</p>
+        
+        <h4 style="color: #38bdf8; margin-top: 15px;">🧠 AI, Machine Learning & Quantitative Architecture</h4>
+        <ul style="padding-left: 20px; color: #cbd5e1;">
+            <li><b>Quantitative Signal Processing & Feature Engineering:</b> The system ingests multi-year historical time-series data, engineering moving-window features (such as 50-day and 200-day Simple Moving Averages) to calculate directional trend vectors and price momentum.</li>
+            <li><b>Explainable Decision Logic (XAI Philosophy):</b> Rather than deploying uninterpretable deep neural networks for price forecasting, the platform utilizes deterministic decision-tree logic. This provides verifiable step-by-step mathematical reasoning for every signal (Accumulate, Hold, Avoid).</li>
+            <li><b>Data Governance & Pipeline Resilience:</b> Built on a cached ETL (Extract, Transform, Load) pipeline, the system dynamically cleans missing entries, filters anomalies (e.g., null values during market transitions), and formats unstructured corporate metadata in real-time.</li>
+            <li><b>Unstructured Context Aggregation:</b> The platform parses live financial news feeds and analyst consensus target distributions to ground quantitative calculations in broader qualitative market sentiment.</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# ==========================================
+# 3. DATA PIPELINE & SIDEBAR
 # ==========================================
 st.sidebar.markdown("### ❖ Asset Locator")
 ticker_input = st.sidebar.text_input("Enter Ticker (e.g., AAPL, GOOGL)", "AAPL").upper().strip()
@@ -131,7 +156,7 @@ current_price = float(df_view['Close'].iloc[-1])
 start_price = float(df_view['Close'].iloc[0])
 
 # ==========================================
-# 3. MATURE EDUCATIONAL TABS
+# 4. MATURE EDUCATIONAL TABS
 # ==========================================
 tab1, tab2, tab3 = st.tabs(["🏛️ Learn & Discover", "📊 Historical Trajectory", "⟡ Strategic Insight"])
 

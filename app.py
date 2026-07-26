@@ -9,18 +9,17 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
 
 # ==========================================
-# 1. INITIALIZATION & SETUP
+# 1. INITIALIZATION & STYLING ENGINE
 # ==========================================
-st.set_page_config(page_title="Algorithmic Equity Intelligence", page_icon="📈", layout="wide")
+st.set_page_config(page_title="Algorithmic Equity Intelligence", page_icon="❖", layout="wide")
 
-# Injecting the Animated Glassmorphism & Diamonds CSS
 st.markdown("""
     <style>
-    /* 1. Animated Deep Gradient Background */
+    /* 1. Animated Deep Space Background */
     .stApp {
-        background: linear-gradient(-45deg, #090910, #1a1a2e, #16213e, #0f3460);
+        background: linear-gradient(-45deg, #070a10, #0f1422, #161f33, #090e1a);
         background-size: 400% 400%;
-        animation: gradientBG 15s ease infinite;
+        animation: gradientBG 16s ease infinite;
     }
     @keyframes gradientBG {
         0% {background-position: 0% 50%;}
@@ -28,78 +27,145 @@ st.markdown("""
         100% {background-position: 0% 50%;}
     }
 
-    /* 2. Frosted Glass Sidebar */
+    /* 2. Merged Sidebar with Subtle Vertical Divider */
     [data-testid="stSidebar"] {
-        background: rgba(20, 20, 30, 0.4) !important;
-        backdrop-filter: blur(15px) !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        background: transparent !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
     }
     
-    /* 3. Transparent Header */
     [data-testid="stHeader"] {
         background: transparent !important;
     }
 
-    /* 4. Main Content Glass Pane */
+    /* 3. Main Glass Platform Pane */
     .block-container {
-        background: rgba(15, 15, 25, 0.5);
-        backdrop-filter: blur(12px);
-        border-radius: 15px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-        padding-top: 3rem !important;
+        background: rgba(13, 17, 28, 0.55);
+        backdrop-filter: blur(16px);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        padding-top: 2.5rem !important;
         padding-bottom: 3rem !important;
-        margin-top: 2rem;
+        margin-top: 1rem;
     }
 
-    /* 5. Custom Metric & AI Explain Boxes (Updated for Glass) */
-    .metric-box { background: rgba(0, 255, 204, 0.05); padding: 15px; border-radius: 8px; border-left: 4px solid #00ffcc; margin-bottom: 20px; backdrop-filter: blur(5px);}
+    /* 4. Refractive Glowing Diamond Crystals */
+    .diamond-crystal {
+        position: fixed;
+        width: 110px;
+        height: 110px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.02) 100%);
+        border: 1.5px solid rgba(255, 255, 255, 0.85);
+        transform: rotate(45deg);
+        box-shadow: 0 0 25px rgba(255, 255, 255, 0.5), inset 0 0 15px rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(6px);
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    /* Inner Diamond Facet Lines */
+    .diamond-crystal::before {
+        content: '';
+        position: absolute;
+        top: 12%; left: 12%; right: 12%; bottom: 12%;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        background: linear-gradient(45deg, rgba(0, 255, 204, 0.08), rgba(188, 19, 254, 0.08));
+    }
+
+    .d1 { width: 130px; height: 130px; top: 12%; left: 3%; animation: floatDiamond1 14s infinite ease-in-out alternate; }
+    .d2 { width: 200px; height: 200px; top: 55%; right: 2%; animation: floatDiamond2 20s infinite ease-in-out alternate; }
+    .d3 { width: 85px; height: 85px; bottom: 8%; left: 28%; animation: floatDiamond3 16s infinite ease-in-out alternate; }
+
+    @keyframes floatDiamond1 {
+        0% { transform: translateY(0px) rotate(45deg) scale(1); box-shadow: 0 0 20px rgba(255,255,255,0.4); }
+        100% { transform: translateY(-35px) rotate(60deg) scale(1.06); box-shadow: 0 0 35px rgba(255,255,255,0.8); }
+    }
+    @keyframes floatDiamond2 {
+        0% { transform: translateY(0px) rotate(45deg) scale(1); box-shadow: 0 0 25px rgba(0, 255, 204, 0.3); }
+        100% { transform: translateY(45px) rotate(30deg) scale(1.05); box-shadow: 0 0 45px rgba(255,255,255,0.9); }
+    }
+    @keyframes floatDiamond3 {
+        0% { transform: translateY(0px) rotate(45deg); box-shadow: 0 0 15px rgba(188, 19, 254, 0.3); }
+        100% { transform: translateY(-25px) rotate(75deg); box-shadow: 0 0 30px rgba(255,255,255,0.7); }
+    }
+
+    /* 5. Custom High-End Trading Platform Sheet Tabs */
+    button[data-baseweb="tab"] {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 6px 6px 0px 0px !important;
+        color: #94a3b8 !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+        letter-spacing: 0.8px !important;
+        padding: 12px 22px !important;
+        margin-right: 4px !important;
+        transition: all 0.25s ease-in-out !important;
+    }
+
+    button[data-baseweb="tab"]:hover {
+        color: #f1f5f9 !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    button[data-baseweb="tab"][aria-selected="true"] {
+        background: linear-gradient(180deg, rgba(0, 255, 204, 0.15) 0%, rgba(15, 23, 42, 0.6) 100%) !important;
+        border-top: 2px solid #00ffcc !important;
+        border-left: 1px solid rgba(0, 255, 204, 0.3) !important;
+        border-right: 1px solid rgba(0, 255, 204, 0.3) !important;
+        border-bottom: none !important;
+        color: #00ffcc !important;
+        text-shadow: 0 0 10px rgba(0, 255, 204, 0.4) !important;
+    }
+
+    /* Tab Divider Line */
+    div[data-baseweb="tab-border"] {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    /* 6. Metric & Explainability Cards */
+    .metric-box { 
+        background: rgba(0, 255, 204, 0.03); 
+        padding: 14px; 
+        border-radius: 8px; 
+        border-left: 3px solid #00ffcc; 
+        margin-bottom: 15px; 
+        backdrop-filter: blur(6px); 
+        border-top: 1px solid rgba(255,255,255,0.05); 
+        border-right: 1px solid rgba(255,255,255,0.05); 
+        border-bottom: 1px solid rgba(255,255,255,0.05); 
+    }
     .sentiment-pos { color: #0aff68; font-weight: bold; }
     .sentiment-neg { color: #ff007f; font-weight: bold; }
     .sentiment-neu { color: #cbd5e1; font-weight: bold; }
-    .ai-explain { background: rgba(188, 19, 254, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #bc13fe; font-size: 0.95rem; backdrop-filter: blur(5px);}
-
-    /* 6. Floating Diamond Crystals */
-    .diamond {
-        position: fixed;
-        background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255,255,255,0.15);
-        box-shadow: inset 0 0 20px rgba(255,255,255,0.05), 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-        z-index: -1; /* Keeps them behind the app data */
-        pointer-events: none; /* Stops them from blocking clicks */
-    }
-    .d1 { width: 250px; height: 250px; top: 15%; left: 5%; animation: float1 12s infinite ease-in-out alternate; }
-    .d2 { width: 400px; height: 400px; top: 50%; right: -5%; animation: float2 18s infinite ease-in-out alternate; }
-    .d3 { width: 150px; height: 150px; bottom: 10%; left: 35%; animation: float3 15s infinite ease-in-out alternate; }
-
-    @keyframes float1 {
-        0% { transform: translateY(0px) rotate(45deg); }
-        100% { transform: translateY(-60px) rotate(65deg) scale(1.05); }
-    }
-    @keyframes float2 {
-        0% { transform: translateY(0px) rotate(30deg); }
-        100% { transform: translateY(50px) rotate(15deg) scale(1.1); }
-    }
-    @keyframes float3 {
-        0% { transform: translateY(0px) rotate(60deg); }
-        100% { transform: translateY(-40px) rotate(90deg) scale(0.9); }
+    .ai-explain { 
+        background: rgba(188, 19, 254, 0.06); 
+        padding: 16px; 
+        border-radius: 8px; 
+        border-left: 3px solid #bc13fe; 
+        font-size: 0.92rem; 
+        backdrop-filter: blur(6px); 
+        border-top: 1px solid rgba(255,255,255,0.05); 
+        border-right: 1px solid rgba(255,255,255,0.05); 
+        border-bottom: 1px solid rgba(255,255,255,0.05); 
     }
     </style>
     
-    <!-- Injecting Diamonds into Background -->
-    <div class="diamond d1"></div>
-    <div class="diamond d2"></div>
-    <div class="diamond d3"></div>
+    <!-- Background Refractive Diamonds -->
+    <div class="diamond-crystal d1"></div>
+    <div class="diamond-crystal d2"></div>
+    <div class="diamond-crystal d3"></div>
 """, unsafe_allow_html=True)
 
-st.title("📈 Algorithmic Equity Intelligence")
+# Title Block
+st.markdown("<h1 style='letter-spacing: 1.5px; font-weight: 700;'><span style='color: #00ffcc;'>❖</span> ALGORITHMIC EQUITY INTELLIGENCE</h1>", unsafe_allow_html=True)
 st.write("Quantitative Data Aggregation, Technical Visualization, and Algorithmic Forecasting.")
 
 # ==========================================
 # 2. DYNAMIC SIDEBAR CONFIGURATION
 # ==========================================
-st.sidebar.header("Equities Control Panel")
+st.sidebar.markdown("<h4 style='letter-spacing: 1px; color: #cbd5e1;'>CONTROL PANEL</h4>", unsafe_allow_html=True)
 
 # Smart Region Selector
 market_region = st.sidebar.selectbox(
@@ -110,15 +176,8 @@ market_region = st.sidebar.selectbox(
 # Base Ticker Input
 raw_ticker = st.sidebar.text_input("Target Ticker:", "NVDA").upper().strip()
 
-# User Interface Instructions
-st.sidebar.markdown("""
-    <div style='background: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px; font-size: 0.85rem; border-left: 3px solid #00bfff;'>
-    <b>🌍 Global Search Tips:</b><br>
-    The system automatically formats tickers for US, India, UK, and Crypto based on your dropdown selection.<br><br>
-    <i>For unlisted regions (e.g., Europe), leave the region as 'US' and manually append the Yahoo Finance suffix (e.g., <code>.PA</code> for Paris, <code>.DE</code> for Germany).</i>
-    </div>
-    <br>
-""", unsafe_allow_html=True)
+# Minimalist Muted Grey Tip
+st.sidebar.caption("💡 Tip: Select region or append suffix (.NS, .L, -USD) for global tickers.")
 
 # Auto-Formatting Logic for Yahoo Finance
 search_ticker = raw_ticker
@@ -137,27 +196,24 @@ def load_data(ticker, years):
     end_date = datetime.today()
     start_date = end_date - timedelta(days=years * 365)
     
-    # METHOD 1: Try yf.Ticker().history (More reliable on cloud servers)
+    # METHOD 1: Try yf.Ticker().history
     try:
         stock = yf.Ticker(ticker)
         df = stock.history(start=start_date, end=end_date)
         if not df.empty:
             df.reset_index(inplace=True)
-            # Remove timezone awareness so Plotly charts don't break
             if df['Date'].dt.tz is not None:
                 df['Date'] = df['Date'].dt.tz_localize(None)
             return df
     except:
-        pass # If Method 1 fails, seamlessly move to Method 2
+        pass
 
     # METHOD 2: Fallback to yf.download 
     df = yf.download(ticker, start=start_date, end=end_date, progress=False)
     if not df.empty:
-        # Handle new yfinance MultiIndex column structures
         if isinstance(df.columns, pd.MultiIndex):
             df.columns = df.columns.droplevel(1)
         df.reset_index(inplace=True)
-        # Remove timezone awareness
         if 'Date' in df.columns and df['Date'].dt.tz is not None:
             df['Date'] = df['Date'].dt.tz_localize(None)
             
@@ -171,9 +227,8 @@ def fetch_news(ticker):
     except:
         return []
 
-@st.cache_data(ttl=86400) # Cache daily to prevent heavy API pulling
+@st.cache_data(ttl=86400)
 def get_market_screener():
-    # 100 high-volume market tickers representing a broad market subset
     tickers_list = [
         "AAPL", "MSFT", "NVDA", "AMZN", "META", "GOOGL", "TSLA", "LLY", "AVGO", "V", 
         "JPM", "UNH", "WMT", "JNJ", "XOM", "MA", "PG", "COST", "HD", "ORCL", 
@@ -209,10 +264,9 @@ with st.spinner("Synchronizing with Market Matrices..."):
 if df.empty or 'Close' not in df.columns:
     st.error(f"No equity data found for '{search_ticker}'.")
     st.info("""
-    **💡 Search Tips for Global Assets:**
-    *   Ensure you have selected the correct market region in the sidebar dropdown.
-    *   **European Stocks:** Select 'US' and manually add `.PA` (Paris) or `.DE` (Germany).
-    *   Verify the exact Yahoo Finance ticker symbol if the issue persists.
+    **Search Assistance:**
+    * Ensure the appropriate market region is selected in the sidebar dropdown.
+    * For European stocks, select 'US' and manually append `.PA` (Paris) or `.DE` (Germany).
     """)
     st.stop()
 
@@ -240,15 +294,15 @@ st.sidebar.markdown(f"**Current Price:** ${current_price:,.2f}")
 st.sidebar.markdown(f"**24h Trailing Change:** {pct_change:+.2f}%")
 
 # ==========================================
-# 3. TABS ARCHITECTURE
+# 3. SHEET TABS ARCHITECTURE
 # ==========================================
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "📊 Technical Charting", 
-    "🧠 Algorithmic Forecast", 
-    "📰 Sentiment Heuristics", 
-    "⚖️ Top & Bottom 10",
-    "🌎 Broad Market Explorer",
-    "⚙️ Quantitative Engine"
+    "TECHNICAL CHARTING", 
+    "ALGORITHMIC FORECAST", 
+    "SENTIMENT HEURISTICS", 
+    "MARKET SCREENER",
+    "GLOBAL EXPLORER",
+    "QUANT VALUATION"
 ])
 
 # ------------------------------------------
@@ -256,14 +310,13 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
 # ------------------------------------------
 with tab1:
     st.header(f"Historical Trajectory: {search_ticker}")
-    st.write("Visualizing raw price action against standard institutional Moving Averages.")
+    st.write("Visualizing price action against institutional Moving Averages.")
     
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=df['Date'], y=df['Close'], name='Close Price', line=dict(color='#00bfff')))
     fig.add_trace(go.Scatter(x=df['Date'], y=df['SMA_50'], name='50-Day SMA', line=dict(color='#0aff68', dash='dot')))
     fig.add_trace(go.Scatter(x=df['Date'], y=df['SMA_200'], name='200-Day SMA', line=dict(color='#ff007f', dash='dot')))
     
-    # Make Plotly chart background transparent to fit the glass aesthetic
     fig.update_layout(
         template="plotly_dark",
         paper_bgcolor='rgba(0,0,0,0)',
@@ -279,7 +332,7 @@ with tab1:
 # ------------------------------------------
 with tab2:
     st.header("Algorithmic Trend Forecasting")
-    st.write(f"Utilizing polynomial machine learning regression on {historical_years} years of market data to project {prediction_days} days ahead.")
+    st.write(f"Polynomial regression model fitted on {historical_years} years of market data projecting {prediction_days} days ahead.")
     
     df_model = df[['Date', 'Close']].dropna().copy()
     df_model['Days'] = (df_model['Date'] - df_model['Date'].min()).dt.days
@@ -311,17 +364,16 @@ with tab2:
     st.plotly_chart(fig2, use_container_width=True)
     
     pred_change = ((future_preds[-1] - current_price) / current_price) * 100
-    st.markdown(f"<div class='ai-explain'><b>Extrapolation Summary:</b> Deriving mathematical momentum from the past {historical_years} years, the regression model estimates a price shift of <b>{pred_change:+.2f}%</b> over the subsequent {prediction_days} days. <i>Note: Statistical models identify trends and momentum; they cannot account for geopolitical volatility or unexpected corporate earnings surprises.</i></div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='ai-explain'><b>Extrapolation Summary:</b> Deriving momentum vectors from the past {historical_years} years, the regression model estimates a price shift of <b>{pred_change:+.2f}%</b> over the subsequent {prediction_days} days.</div>", unsafe_allow_html=True)
 
 # ------------------------------------------
-# TAB 3: SENTIMENT HEURISTICS & XAI
+# TAB 3: SENTIMENT HEURISTICS
 # ------------------------------------------
 with tab3:
     st.header("Sentiment Heuristics & Explainable AI")
-    st.write("Executing Natural Language Processing over real-time financial headlines to calculate market consensus.")
+    st.write("Executing Natural Language Processing over real-time financial headlines.")
     
     news_items = fetch_news(search_ticker)
-    
     pos_words = ['surge', 'jump', 'grow', 'beat', 'up', 'profit', 'dividend', 'buy', 'upgrade', 'bull', 'high', 'gain']
     neg_words = ['drop', 'fall', 'miss', 'down', 'loss', 'sell', 'downgrade', 'bear', 'low', 'lawsuit', 'penalty', 'plunge']
     
@@ -330,7 +382,6 @@ with tab3:
     else:
         total_score = 0
         for item in news_items:
-            # Dynamic dictionary parsing to handle both legacy and modern yfinance data structures
             if 'content' in item and isinstance(item['content'], dict):
                 content = item['content']
                 title = content.get('title', 'No Title')
@@ -358,20 +409,20 @@ with tab3:
         st.subheader("Algorithmic Sentiment Explainability (XAI)")
         explain_text = f"The heuristic engine processed {len(news_items)} recent headlines. "
         if total_score > 2:
-            explain_text += "The aggregated sentiment leans **Positive**. Lexical analysis identifies vocabulary correlated with growth, institutional upgrades, or earnings beats, which historically maps to short-term retail buying pressure."
+            explain_text += "The aggregated sentiment leans **Positive**, identifying vocabulary correlated with growth or institutional upgrades."
         elif total_score < -2:
-            explain_text += "The aggregated sentiment leans **Negative**. Lexical analysis identifies vocabulary correlated with drops, downgrades, or losses, suggesting short-term market anxiety or aggressive institutional selling."
+            explain_text += "The aggregated sentiment leans **Negative**, identifying vocabulary correlated with pullbacks or institutional selling."
         else:
-            explain_text += "The aggregated sentiment is **Neutral/Mixed**. The news feed contains a balanced ratio of positive and negative drivers, indicating potential price consolidation."
+            explain_text += "The aggregated sentiment is **Neutral/Mixed**, indicating potential price consolidation."
             
-        st.markdown(f"<div class='ai-explain'><b>Why this matters:</b> {explain_text} Algorithmic trading systems constantly parse headlines in milliseconds. Correlating human and media sentiment provides a crucial psychological context to purely numerical chart movements.</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='ai-explain'><b>Why this matters:</b> {explain_text} Correlating sentiment with numerical chart indicators provides context to raw market movements.</div>", unsafe_allow_html=True)
 
 # ------------------------------------------
-# TAB 4: MARKET SCREENER (TOP & BOTTOM 10)
+# TAB 4: MARKET SCREENER
 # ------------------------------------------
 with tab4:
     st.header("Sector Performance Extremes")
-    st.write("Evaluating a 100-ticker subset for trailing 1-Year returns to identify statistical outliers.")
+    st.write("Evaluating a 100-ticker benchmark for trailing 1-Year returns.")
     
     with st.spinner("Aggregating cross-market scan..."):
         screener_df = get_market_screener()
@@ -379,29 +430,29 @@ with tab4:
     if not screener_df.empty:
         colA, colB = st.columns(2)
         with colA:
-            st.subheader("🔥 Top 10 Outperformers")
+            st.subheader("Top 10 Outperformers")
             top_10 = screener_df.head(10)
             for _, row in top_10.iterrows():
                 st.markdown(f"<div class='metric-box'><b>{row['Ticker']}</b>: <span style='color:#0aff68'>+{row['1-Year Return (%)']:.2f}%</span></div>", unsafe_allow_html=True)
                 
         with colB:
-            st.subheader("🧊 Bottom 10 Underperformers")
+            st.subheader("Bottom 10 Underperformers")
             bottom_10 = screener_df.tail(10)
             for _, row in bottom_10.iterrows():
                 color = "#ff007f" if row['1-Year Return (%)'] < 0 else "#0aff68"
                 st.markdown(f"<div class='metric-box' style='border-left-color:#ff007f;'><b>{row['Ticker']}</b>: <span style='color:{color}'>{row['1-Year Return (%)']:.2f}%</span></div>", unsafe_allow_html=True)
     else:
-        st.error("Market data pipeline temporarily unavailable. Please try again later.")
+        st.error("Market data pipeline temporarily unavailable.")
 
 # ------------------------------------------
-# TAB 5: BROAD MARKET EXPLORER
+# TAB 5: GLOBAL EXPLORER
 # ------------------------------------------
 with tab5:
     st.header("Global Equities Explorer")
-    st.write("Browse current prices and 1-Year trailing returns for a representative basket of 100 high-volume market tickers.")
+    st.write("Browse trailing 1-Year performance metrics across high-volume equities.")
     
     if 'screener_df' not in locals():
-        with st.spinner("Fetching global metrics..."):
+        with st.spinner("Fetching metrics..."):
             screener_df = get_market_screener()
             
     if not screener_df.empty:
@@ -410,41 +461,41 @@ with tab5:
         display_df['1-Year Return (%)'] = display_df['1-Year Return (%)'].apply(lambda x: f"{x:+.2f}%")
         st.dataframe(display_df, use_container_width=True, height=600)
     else:
-        st.error("Data pipeline timeout. Please refresh the module.")
+        st.error("Data pipeline timeout.")
 
 # ------------------------------------------
-# TAB 6: QUANTITATIVE VALUATION ENGINE
+# TAB 6: QUANT VALUATION ENGINE
 # ------------------------------------------
 with tab6:
     st.header("Quantitative Valuation Engine")
-    st.write("Synthesizing technical indicators and algorithmic projections into a logical valuation rating.")
+    st.write("Synthesizing indicators into a quantitative rating.")
     
     score = 0
     reasons = []
     
     if current_rsi < 30:
         score += 1
-        reasons.append(f"The RSI is {current_rsi:.1f}. This designates the asset as technically 'Oversold', indicating it may be undervalued and positioned for a bullish rebound.")
+        reasons.append(f"RSI is {current_rsi:.1f} (Technically 'Oversold').")
     elif current_rsi > 70:
         score -= 1
-        reasons.append(f"The RSI is {current_rsi:.1f}. This designates the asset as technically 'Overbought', indicating it may be overvalued and susceptible to a bearish correction.")
+        reasons.append(f"RSI is {current_rsi:.1f} (Technically 'Overbought').")
     else:
-        reasons.append(f"The RSI is {current_rsi:.1f}, placing the asset in a neutral momentum zone.")
+        reasons.append(f"RSI is {current_rsi:.1f} (Neutral momentum zone).")
         
     if current_price > current_sma50:
         score += 1
-        reasons.append(f"The current price (${current_price:.2f}) sits safely above its 50-day SMA (${current_sma50:.2f}), confirming an ongoing medium-term uptrend.")
+        reasons.append(f"Price (${current_price:.2f}) sits above the 50-day SMA (${current_sma50:.2f}).")
     else:
         score -= 1
-        reasons.append(f"The current price (${current_price:.2f}) has fallen below its 50-day SMA (${current_sma50:.2f}), confirming an ongoing medium-term downtrend.")
+        reasons.append(f"Price (${current_price:.2f}) sits below the 50-day SMA (${current_sma50:.2f}).")
         
     if 'pred_change' in locals():
         if pred_change > 5:
             score += 1
-            reasons.append(f"The ML polynomial forecast projects a statistically significant positive trajectory (+{pred_change:.1f}%) over the selected timeframe.")
+            reasons.append(f"ML polynomial forecast projects positive trend (+{pred_change:.1f}%).")
         elif pred_change < -5:
             score -= 1
-            reasons.append(f"The ML polynomial forecast projects a statistically significant negative trajectory ({pred_change:.1f}%) over the selected timeframe.")
+            reasons.append(f"ML polynomial forecast projects negative trend ({pred_change:.1f}%).")
         
     if score >= 2:
         verdict = "STRONG BUY"
@@ -456,11 +507,11 @@ with tab6:
         verdict = "HOLD / NEUTRAL"
         v_color = "#ff9900"
         
-    st.markdown(f"<h1 style='text-align: center; color: {v_color}; font-size: 4rem; margin-top: 20px;'>{verdict}</h1>", unsafe_allow_html=True)
+    st.markdown(f"<h1 style='text-align: center; color: {v_color}; font-size: 3.8rem; margin-top: 15px;'>{verdict}</h1>", unsafe_allow_html=True)
     
-    st.markdown("### 🧠 Logical Synthesis Breakdown:")
+    st.markdown("### Logical Synthesis Breakdown:")
     for r in reasons:
         st.markdown(f"- {r}")
         
     st.markdown("<br><hr>", unsafe_allow_html=True)
-    st.caption("🚨 ACADEMIC DISCLAIMER: This application is constructed for portfolio demonstration and academic research purposes only. Algorithmic predictions carry inherent financial risk. Always perform independent due diligence before executing live market trades.")
+    st.caption("ACADEMIC DISCLAIMER: Constructed for portfolio demonstration and research purposes only. Algorithmic predictions carry inherent risk.")
